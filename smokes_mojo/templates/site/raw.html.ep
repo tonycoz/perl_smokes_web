@@ -1,0 +1,6 @@
+% layout 'default';
+% title 'Raw report '.$id;
+<h2><%= $pr->subject %></h2>
+<p class="links">[<a href="<%= $pr->original_url %>">via nntp.perl.org</a>]</p>
+<pre><%= $raw %></pre>
+

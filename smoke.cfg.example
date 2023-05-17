@@ -1,0 +1,8 @@
+{
+  "secrets":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "db": {
+    "dsn":"dbi:mysql:databasename
+    "user":"database user",
+    "password":"database password"
+  }
+}

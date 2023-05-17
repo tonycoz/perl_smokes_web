@@ -1,0 +1,97 @@
+% layout 'default';
+% title 'Smoke DB report '.$id;
+<h1><%= $sr->title %></h1>
+<p class="links">
+  [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
+  [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
+  [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
+</p>
+<pre id="dbreport">
+Automated smoke report for branch <%= $js->{smoke_branch} %> <%= $js->{perl_id} %> patch <%= $js->{git_id} %> <%= $js->{git_describe} %>.
+<%= $js->{hostname} %>: <%= $js->{cpu_description} %> (<%= $js->{architecture} %>/<%= $js->{cpu_count} %> cpus)
+    on        <%=  $js->{osname} %> <%= $js->{osversion} %>
+% my $index = 1 ;
+% for my $cc ($js->{c_compilers}->@*) {
+    using     <%=  $cc->{cc} %> version <%= $cc->{ccversion} %> (*<%= $index %>)
+% ++$index;
+% }
+    smoketime <%= $js->{duration_in_hhmm} %> (average <%= $js->{average_in_hhmm} %>)
+
+% my $class = $js->{summary} eq "FAIL(X)"
+%     ? "doubt"
+%     : $js->{summary} =~ /FAIL/ ? "fail" : "pass";
+Summary: <span class="<%= $class %>"><%= $js->{summary} %></span>
+
+O = OK  F = Failure(s), extended report at the bottom
+X = Failure(s) under TEST but not under harness
+? = still running or test results not (yet) available
+Build failures during:       - = unknown or N/A
+c = Configure, m = make, M = make (after miniperl), t = make test-prep
+
+<%= $js->{git_describe} %>
+----------------------- ----------------------------------------------------
+% for my $row ($js->{matrix}->@*) {
+<%= $row %>
+% }
+
+% if ($js->{harness_only}) {
+Testsuite was run only with 'harness'
+
+% }
+% if (length $js->{applied_patches}) {
+  Applied patches:
+    <%= $js->{applied_patches} %>
+% }
+% if (length $js->{skipped_tests}) {
+Skipped tests:
+    <%= $js->{skipped_tests} %>
+% } else {
+Skipped tests:
+    None.
+% }
+
+Test failures:
+% if (!$js->{test_failures}) {
+      None.
+% }
+    % else {
+%   for my $failure ($js->{test_failures}->@*) {
+  <%=  $failure->{test}{test} %> (<%=  $failure->{test}{status} %> <%= $failure->{test}{extra} =~ s/\s+/ /gr %>)
+%     for my $cfg ($failure->{configs}->@*) {      
+      [<%=  $cfg->{io_envs} %>] <%=  $cfg->{arguments} %>
+%     }
+
+%   }
+% }
+% if ($js->{test_todo_passed}->@*) {
+    Test todo-passed:
+%   for my $todo ($js->{test_todo_passed}->@*) {
+    <%=  $todo->{test}{test} %> (<%= $todo->{test}{extra} %>)
+%     for my $cfg ($todo->{configs}->@*) {
+      [<%=  $cfg->{io_envs} %>] <%= $cfg->{arguments} %>
+%     }
+%   }
+    
+% }
+Compiler messages:
+% if (!$js->{compiler_msgs}) {
+    None.
+% } else {
+<%=  $js->{compiler_msgs} =~ s/^/    /gmr %>
+% }
+</pre>
+
+<hr>
+<pre class="about">
+About this smoke:
+smoking-perl: <%= $js->{smoke_perl} %>
+smoker-version: <%=  $js->{smoke_version} %>/<%= $js->{smoker_version} %>
+timestamp: <%= $js->{smoke_date} %>
+tester: <%= $js->{username} %>
+</pre>
+% if ($js->{user_note}) {
+<div class="user-note">
+  <%= $js->{user_note} %>
+</div>
+% }
+

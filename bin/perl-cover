@@ -1,0 +1,144 @@
+#!env perl
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Temp ();
+use Config;
+
+my $cc = 'clang';
+my $commit = "HEAD";
+my $cctype = "clang";
+my @args;
+GetOptions
+  (
+   "cc=s" => \$cc,
+   "commit=s" => \$commit,
+   "cctype" => \$cctype,
+   "D=s" => sub { push @args, "-D", $_[1] },
+   "U=s" => sub { push @args, "-U", $_[1] },
+   "A=s" => sub { push @args, "-A", $_[1] },
+  );
+
+my ($prefix, $checkout, $outdir) = @ARGV;
+
+defined $outdir
+  or die <<'EOS';
+Usage: perl-cover [options] checkoutdir outdir
+Options:
+ -commit=commit-id
+   Default: HEAD
+ -cctype=clang
+   Default: clang (must be clang)
+ -cc=clang
+   Compiler. Default: clang.
+EOS
+
+-d $checkout
+  or die "Checkout directory doesn't exist\n";
+-d "$checkout/.git" || -d "$checkout/config"
+  or die "Checkout directory isn't a git checkout\n";
+
+chdir $checkout
+  or die "Cannot chdir $checkout: $!\n";
+
+system "git clean -dxfq"
+  and die;
+
+my $sha = listreadpipe("git", "rev-parse", "-q", "--verify", $commit)
+  or die "Cannot resolve $commit\n";
+chomp $sha;
+
+system "git", "checkout", $sha
+  and die "Cannot checkout $sha\n";
+
+my $outname = "$outdir/$prefix.$sha.lcov";
+
+if ($cctype eq "clang") {
+  my $clang_prefix = "";
+  my $clang_suffix = "";
+  if ($cc =~ /^(.*)\bclang((?:-\d+)?)$/) {
+    $clang_prefix = $1;
+    $clang_suffix = $2;
+  }
+  my $llvm_profdata = "${clang_prefix}llvm-profdata${clang_suffix}";
+  find_exe($llvm_profdata)
+    or die "Cannot find executable $llvm_profdata\n";
+  my $llvm_cov = "${clang_prefix}llvm-cov${clang_suffix}";
+  find_exe($llvm_cov)
+    or die "Cannot find executable $llvm_cov\n";
+  push @args,
+    "-Dcc=$cc",
+    "-Dld=$cc",
+    "-Accflags=-fprofile-instr-generate",
+    "-Accflags=-fcoverage-mapping",
+    "-Accflags=-fcoverage-compilation-dir=$checkout";
+
+  system "./Configure", "-des", "-Dusedevel", @args
+    and die "Configure failed\n";
+  system "make", "-j3", "test-prep"
+    and die "make test-prep failed\n";
+  my $data_dir = File::Temp->newdir( CLEANUP => 0 );
+  local $ENV{LLVM_PROFILE_FILE} = "$data_dir/profile%p.profraw";
+  system "make", "test_harness", "TEST_JOBS=3"
+    and die "make test_harness failed\n";
+  my @profs = glob "$data_dir/profile*.profraw";
+  my $fulldata = "$data_dir/full.prof";
+  system $llvm_profdata, "merge", @profs, "-o", $fulldata
+    and die "Cannot run $llvm_profdata\n";
+  print "Full data $fulldata\n";
+  open my $cfh, "-|", $llvm_cov, "export", "-format=lcov",
+    "-compilation-dir=$checkout", "-instr-profile", $fulldata, "./perl"
+    or die "Cannot run $llvm_cov export: $!";
+  
+  open my $ofh, ">", $outname
+    or die "Cannot create $outname: $!\n";
+  while (<$cfh>) {
+    print $ofh $_;
+  }
+  close $ofh
+    or die "Failed to close $outname: $!\n";
+  close $cfh
+    or die "Failed to close pipe: $!\n";
+
+}
+else {
+  die "Unsupported cctype '$cctype'\n";
+}
+
+sub listreadpipe {
+  my (@cmd) = @_;
+
+  open my $fh, "-|", @cmd
+    or die "Cannot run @cmd\n";
+  my @result;
+  if (wantarray) {
+    @result = <$fh>;
+  }
+  else {
+    local $/;
+    $result[0] = <$fh>;
+  }
+  close $fh;
+
+  return wantarray() ? @result : $result[0];
+}
+
+sub find_exe {
+  my ($name) = @_;
+
+  for my $path (split /\Q$Config{path_sep}/, $ENV{PATH}) {
+    -x "$path/$name" and return 1;
+  }
+  return 0;
+}
+
+=head1 TODO
+
+- clone (?) to a temp directory and work there (works with bare source
+  repos)
+
+- support gcc
+
+- support MSVC
+
+=cut

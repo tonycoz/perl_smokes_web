@@ -1,0 +1,42 @@
+% layout 'default';
+% title 'Commits for '.$branch;
+<h2>Smoke reports for branch <a href="https://github.com/Perl/perl5/commits/<%= $branch %>"><%= $branch %></a></h2>
+% if ($message) {
+<p class="error"><%= $message %></p>
+% }
+<table id="commits">
+  <tr>
+  </tr>
+% for my $commit (@$commits) {
+  <tr class="commit">
+    <td><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>"><%= substr($commit->{sha}, 0, 12) %></a></td>
+    <td colspan="6"><%= $commit->{subject} %></td>
+    <td></td>
+  </tr>
+%   for my $smoke ($commit->{smokes}->@*) {
+%     my $status = $smoke->status;  
+%     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+  <tr class="smoke <%= $class %>">
+    <td></td>
+    <td><%= $status %></td>
+    <td><%= $smoke->os %></td>
+    <td><%= $smoke->cpu %></td>
+    <td><div class="compiler" title="<%= $smoke->compiler %>"><%= $smoke->compiler %></span></td>
+    <td><%= $smoke->from %></td>
+    <td class="when_at"><%= $smoke->when_at %></td>
+    <td class="links">
+      <a href="<%= $smoke->report_url %>">Report</a>
+      <a href="<%= $smoke->original_url %>"><%= $smoke->msg_id ? "N" : "DB" %></a>
+    </td>
+  </tr>
+%   }
+% }
+</table>
+<script type="text/javascript">
+  var all_branches = [
+% for my $b (@$branches) {
+    "<%= $b %>"<%= $b eq $branches->[-1] ? "\n" : ",\n" %>
+% }
+  ];
+  
+</script>

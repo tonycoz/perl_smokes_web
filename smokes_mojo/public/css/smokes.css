@@ -1,0 +1,87 @@
+
+
+body, th, td {
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+}
+
+table#commits {
+    padding: 1px;
+}
+
+#commits .compiler {
+    width: 12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#commits .when_at {
+    white-space: nowrap;
+}
+
+table {
+    border-left: 1px solid #DDD;
+    border-top: 1px solid #DDD;
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 2px;
+    border-right: 1px solid #DDD;
+    border-bottom: 1px solid #DDD;
+}
+
+#commits tr.smoke.fail {
+    background-color: #FCC;
+}
+
+#commits tr.smoke.fail:hover {
+    background-color: #D99;
+}
+
+#commits tr.smoke.fail:nth-child(even) {
+    background-color: #FDD;
+}
+
+#commits tr.smoke.fail:nth-child(even):hover {
+    background-color: #DAA;
+}
+
+#commits tr.doubt {
+    background-color: #F88;
+}
+
+#commits tr.doubt:nth-child(even) {
+    background-color: #F88;
+}
+
+#commits tr.smoke:hover {
+    background-color: #EEE;
+}
+
+#commits tr.smoke:nth-child(even) {
+    background-color: #BFB;
+}
+
+#commits tr.pass:hover:nth-child(even) {
+    background-color: #7C7;
+}
+
+/*#commits tr.smoke:hover {
+    background-color: #CCF;
+}*/
+
+#commits tr.commit {
+    background-color: #DDD;
+}
+
+#commits .commit td {
+    font-size: 14px;
+    padding-top: 6px;
+}
+
+#dbreport .fail {
+    background-color: #F00;
+    color: #FFF;
+}
