@@ -34,7 +34,7 @@ td, th {
 }
 
 #commits tr.smoke.doubt {
-    background-color: #FFD;
+    background-color: #EEC;
 }
 
 #commits tr.smoke.doubt:hover {
@@ -42,7 +42,7 @@ td, th {
 }
 
 #commits tr.smoke.doubt:nth-child(even) {
-    background-color: #DD9;
+    background-color: #CC8;
 }
 
 #commits tr.smoke.doubt:nth-child(even):hover {
