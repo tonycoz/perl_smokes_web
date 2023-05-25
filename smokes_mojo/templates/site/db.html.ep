@@ -57,8 +57,9 @@ Skipped tests:
 % }
 
 Test failures:
-% if (!$js->{test_failures}) {
-      None.
+% if (!$js->{test_failures} || !$js->{test_failures}->@*) {
+    None.
+
 % }
     % else {
 %   for my $failure ($js->{test_failures}->@*) {

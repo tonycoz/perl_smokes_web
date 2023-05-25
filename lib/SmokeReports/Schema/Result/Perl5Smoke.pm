@@ -140,7 +140,7 @@ sub _group_tests_by_status ($js, $group_status) {
 	for my $result ($config->{results}->@*) {
 	    for my $io_env ($result->{failures}->@*) {
 		for my $test ($io_env->{failure}) {
-		    next if $test->{status} ne $group_status;
+		    next if $test->{status} !~ /^\Q$group_status\E\b/;
 
 		    $max_name_length = length($test->{test})
 			if length($test->{test}) > $max_name_length;
