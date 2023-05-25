@@ -259,13 +259,12 @@ sub dblog ($self) {
     my $report_id = $self->param("id");
     my $schema = $self->app->schema;
     my $prs = $schema->resultset("ParsedReport");
-    my $dbr = $schema->resultset("Perl5Smoke");
-    my $pr = $prs->find({ smokedb_id => $report_id });
+    my $pr = $prs->find(
+	{ smokedb_id => $report_id },
+	{
+	    columns => [ qw(subject smokedb_id) ]
+	});
     unless ($pr) {
-	$self->render(template => "does_not_exist");
-    }
-    my $sr = $dbr->find({ report_id => $report_id });
-    unless ($sr) {
 	$self->render(template => "does_not_exist");
     }
     my $base = $self->app->config->{logpath};
@@ -274,20 +273,16 @@ sub dblog ($self) {
     }
     
     $self->render(pr => $pr,
-		  sr => $sr,
-		  id => $sr->report_id);
+		  id => $pr->smokedb_id);
 }
 
 sub dblogtext ($self) {
     my $report_id = $self->param("id");
-    my $schema = $self->app->schema;
-    my $dbr = $schema->resultset("Perl5Smoke");
-    my $sr = $dbr->find({ report_id => $report_id });
-    unless ($sr) {
+    unless ($report_id =~ /\A[1-9][0-9]*\z/) {
 	$self->render(template => "does_not_exist");
     }
     my $base = $self->app->config->{logpath};
-    my $filename = $base . "/" . $sr->report_id . ".gz";
+    my $filename = $base . "/" . $report_id . ".gz";
     unless (-f $filename) {
 	$self->render(template => "does_not_exist");
     }

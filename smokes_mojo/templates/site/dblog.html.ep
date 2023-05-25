@@ -1,6 +1,6 @@
 % layout 'default';
 % title 'Smoke DB log '.$id;
-<h1><%= $sr->title %></h1>
+<h1><%= $pr->subject %></h1>
 <p class="links">
   [<a href="<%= $pr->report_url %>">Report</a>]
   [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
