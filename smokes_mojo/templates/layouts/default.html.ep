@@ -5,5 +5,11 @@
     <link rel="stylesheet" type="text/css" media="screen" href="/css/smokes.css" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   </head>
-  <body><%= content %></body>
+  <body>
+    <menu>
+      <li><a href="/">Reports by commit</a></li>
+      <li><a href="/recent/">Recent reports</a></li>
+      <li><a href="https://test-smoke.org/">Perl5 CoreSmokeDB</a></li>
+    </menu>
+    <%= content %></body>
 </html>

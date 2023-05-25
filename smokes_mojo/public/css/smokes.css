@@ -7,6 +7,7 @@ body, th, td {
 
 table#commits {
     padding: 1px;
+    min-width: 1200px;
 }
 
 #commits .compiler {
@@ -21,51 +22,63 @@ table#commits {
 }
 
 table {
-    border-left: 1px solid #DDD;
-    border-top: 1px solid #DDD;
+    border-left: 1px solid #AAA;
+    border-top: 1px solid #AAA;
     border-collapse: collapse;
 }
 
 td, th {
     padding: 2px;
-    border-right: 1px solid #DDD;
-    border-bottom: 1px solid #DDD;
+    border-right: 1px solid #AAA;
+    border-bottom: 1px solid #AAA;
 }
 
-#commits tr.smoke.fail {
-    background-color: #FCC;
+#commits tr.smoke.doubt {
+    background-color: #FFD;
 }
 
-#commits tr.smoke.fail:hover {
-    background-color: #D99;
+#commits tr.smoke.doubt:hover {
+    background-color: #DDB;
 }
 
-#commits tr.smoke.fail:nth-child(even) {
-    background-color: #FDD;
+#commits tr.smoke.doubt:nth-child(even) {
+    background-color: #DD9;
 }
 
-#commits tr.smoke.fail:nth-child(even):hover {
-    background-color: #DAA;
+#commits tr.smoke.doubt:nth-child(even):hover {
+    background-color: #AA7;
 }
 
-#commits tr.doubt {
+#commits tr.fail {
+    background-color: #F99;
+}
+
+#commits tr.fail:nth-child(even) {
+    background-color: #FAA;
+}
+
+#commits tr.fail:hover {
+    background-color: #F77;
+}
+
+#commits tr.fail:nth-child(even):hover {
     background-color: #F88;
 }
 
-#commits tr.doubt:nth-child(even) {
-    background-color: #F88;
-}
-
-#commits tr.smoke:hover {
+#commits tr.smoke.pass:hover {
     background-color: #EEE;
 }
 
-#commits tr.smoke:nth-child(even) {
+#commits tr.smoke.pass:nth-child(even) {
     background-color: #BFB;
 }
 
 #commits tr.pass:hover:nth-child(even) {
-    background-color: #7C7;
+    background-color: #9D9;
+}
+
+#commits tr.hide {
+    display: none;
 }
 
 /*#commits tr.smoke:hover {
@@ -84,4 +97,57 @@ td, th {
 #dbreport .fail {
     background-color: #F00;
     color: #FFF;
+}
+
+#branchform {
+    position: absolute;
+    right: 10px;
+}
+
+.autocomplete {
+    display: inline-block;
+}
+
+.autocomplete input {
+    width: 15em;
+}
+
+#branches {
+    position: absolute;
+    top: 100%;
+    z-index: 99;
+}
+
+menu {
+    list-style: none;
+    padding: 0;
+}
+
+menu li {
+    border-left: 2px solid #000;
+    background-color: #CCC;
+    display: inline-block;
+    font-size: 14px;
+}
+menu li:hover {
+    background-color: #EEE;
+}
+menu li a {
+    display: block;
+    padding: 3px;
+    text-decoration: none;
+}
+
+.filters input {
+  width: 100%;
+  border: none;
+  background-color: #CFC;
+}
+
+.links {
+    font-size: 14px;
+}
+
+.links a:hover {
+    background-color: #CCC;
 }

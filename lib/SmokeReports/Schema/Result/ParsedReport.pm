@@ -9,6 +9,8 @@ __PACKAGE__->add_columns(qw/id sha subject status os cpu cpu_count cpu_full/,
 			 qw/when_at configuration branch duration/,
 			 qw/smokedb_id logurl msg_id uuid/);
 __PACKAGE__->set_primary_key("id");
+__PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
+			{ 'foreign.sha' => 'self.sha' });
 
 sub from ($self) {
     my $from = $self->from_email;
@@ -36,6 +38,16 @@ sub report_url ($self) {
     else {
 	return "/db/" . $self->smokedb_id;
     }
+}
+
+sub more_logurl ($self, $config) {
+    $self->logurl and return $self->logurl;
+    my $base = $config->{logpath};
+    $base or die;
+    my $id = $self->smokedb_id;
+    $id or return '';
+    -f "$base/$id.gz" or return '';
+    return "/dblog/$id";
 }
 
 1;

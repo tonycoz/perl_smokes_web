@@ -1,0 +1,13 @@
+% layout 'default';
+% title 'Smoke DB log '.$id;
+<h1><%= $sr->title %></h1>
+<p class="links">
+  [<a href="<%= $pr->report_url %>">Report</a>]
+  [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
+  [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
+  [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
+</p>
+<pre id="dblog" data-rawurl="/dblogtext/<%= $id %>">
+(log will load)
+</pre>
+<script type="text/javascript" src="/js/dblog.js"></script>

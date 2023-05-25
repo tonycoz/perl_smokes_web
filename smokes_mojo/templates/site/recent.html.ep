@@ -1,0 +1,30 @@
+% layout 'default';
+% title 'Recently downloaded reports';
+<h2>Recently downloaded reports</h2>
+<table id="commits">
+  <tr>
+  </tr>
+%   for my $smoke ($smokes->@*) {
+%     my $status = $smoke->{status};  
+%     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+  <tr class="smoke <%= $class %>">
+    <td><%= $status %></td>
+%     my $branch = $smoke->{"branch"};
+    <td><a href="/?b=<%= $branch %>"><%= $branch %></a></td>
+    <td><a title="<%= $smoke->{subject} %>" href="https://github,com/Perl/perl5/commit/<%= $smoke->{sha} %>"><%= substr($smoke->{sha}, 0, 10) %></a></td>
+    <td><%= $smoke->{os} %></td>
+    <td><%= $smoke->{cpu} %></td>
+    <td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></span></td>
+    <td><%= $smoke->{from} %></td>
+    <td class="when_at"><%= $smoke->{age} %></td>
+    <td class="links">
+      <a href="<%= $smoke->{report_url} %>">Report</a>
+      <a href="<%= $smoke->{original_url} %>"><%= $smoke->{msg_id} ? "N" : "DB" %></a>
+% my $logurl = $smoke->{logurl};
+% if ($logurl) {
+<a href="<%= $logurl %>">Log</a>
+% }
+    </td>
+  </tr>
+%   }
+</table>

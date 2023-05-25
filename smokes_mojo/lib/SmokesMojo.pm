@@ -32,7 +32,10 @@ sub startup ($self) {
   $r->get('/raw/:id')->to("site#raw");
   $r->get('/db/:id')->to("site#db");  
   $r->get('/dbjson/:id')->to("site#dbjson");  
-  $r->get('/dbreportjson/:id')->to("site#dbreportjson");  
+  $r->get('/dbreportjson/:id')->to("site#dbreportjson");
+    $r->get('/recent/')->to("site#recent");
+    $r->get('/dblog/:id')->to("site#dblog");
+    $r->get('/dblogtext/:id')->to("site#dblogtext");
 }
 
 sub schema ($self) {
