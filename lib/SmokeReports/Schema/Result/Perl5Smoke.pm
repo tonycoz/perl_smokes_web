@@ -238,4 +238,12 @@ sub full_report ($self) {
     $js;
 }
 
+sub log_filename ($self, $config) {
+    my $base = $config->{logpath};
+    $base or die;
+    my $file = "$base/" . $self->report_id() . ".gz";
+    -f $file or return '';
+    return $file;
+}
+
 1;

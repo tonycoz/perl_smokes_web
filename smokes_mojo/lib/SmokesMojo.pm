@@ -22,7 +22,7 @@ sub startup ($self) {
     $self->renderer->paths([ $path ]);
 
   # Configure the application
-  $self->secrets($config->{secrets});
+    $self->secrets($config->{secrets});
 
   # Router
   my $r = $self->routes;
@@ -31,11 +31,13 @@ sub startup ($self) {
   $r->get('/')->to('site#index');
   $r->get('/raw/:id')->to("site#raw");
   $r->get('/db/:id')->to("site#db");  
-  $r->get('/dbjson/:id')->to("site#dbjson");  
-  $r->get('/dbreportjson/:id')->to("site#dbreportjson");
+  $r->get('/dbjson/<id:num>')->to("site#dbjson");  
+  $r->get('/dbreportjson/<id:num>')->to("site#dbreportjson");
     $r->get('/recent/')->to("site#recent");
-    $r->get('/dblog/:id')->to("site#dblog");
-    $r->get('/dblogtext/:id')->to("site#dblogtext");
+    $r->get('/dblog/<id:num>')->to("site#dblog");
+    $r->get('/dblogtext/<id:num>')->to("site#dblogtext");
+    $r->get('/api/reports_from_id/<id:num>')->to("api#reports_from_id");
+    $r->get('/api/report_data/<id:num>')->to("api#report_data");
 }
 
 sub schema ($self) {
