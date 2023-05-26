@@ -1,7 +1,6 @@
 package SmokesMojo::Controller::Site;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
-use Mojo::JSON 'decode_json';
 
 sub index ($self) {
     my $branch = $self->param("b");
@@ -97,11 +96,21 @@ order by
 SQL
 	 }
 	);
+    # we want blead and latest maint at the top, and then the
+    # selected branch if it's neither of those
+    my @last_maint = (sort grep /^maint-5.[0-9]{2}$/, @$branches)[-1, -2];
+    my @branches = ( "blead", @last_maint );
+    my %bseen = map { $_ => 1 } @branches;
+    unless ($bseen{$branch}) {
+	push @branches, $branch;
+	++$bseen{$branch};
+    }
+    push @branches, grep !$bseen{$_}, @$branches;
 
     $self->render(commits => \@commits,
 		  branch => $branch,
 	          message => $self->stash("message"),
-		  branches => $branches,
+		  branches => \@branches,
 		  start => $start,
 		  page => $page,
 		  more_pages => (@commits == 50),
@@ -144,10 +153,7 @@ sub recent ($self) {
 	     page => $page,
 	     order_by => { -desc => "when_at" },
 	 });
-    $schema->storage->debug(1);
-    $schema->storage->debugfh(\*STDERR);
     my @smokes = $smokes->all;
-    $schema->storage->debug(0);
     for my $smoke (@smokes) {
 	my %temp = (
 	    $smoke->get_columns,
@@ -230,7 +236,6 @@ sub dbjson ($self) {
     unless ($sr) {
 	$self->render(template => "does_not_exist");
     }
-    require Cpanel::JSON::XS;
     my $data = $sr->raw_report;
     $self->render(data => $data, format => "json");
 }

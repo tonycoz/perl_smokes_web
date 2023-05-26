@@ -1,7 +1,15 @@
 % layout 'default';
 % title 'Reports for branch '.$branch;
 <form id="branchform" action="/">
-Branch:<div class="autocomplete"><input list="branches" type="text" name="b" value="<%= $branch %>" required></div>
+Branch:<div class="autocomplete">
+% my @first = @{$branches}[0 .. 7];
+<select name="b" id="b">
+% for my $b (@first) {
+<option<%= $branch eq $b ? ' selected' : ''%>><%= $b %></option>
+% }
+<option value=""> -- I want an older branch -- </option>
+</select>
+</div>
 </form>
 <h2>Reports for branch <a href="https://github.com/Perl/perl5/commits/<%= $branch %>"><%= $branch %></a></h2>
 % if ($message) {
