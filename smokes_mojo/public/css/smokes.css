@@ -33,6 +33,11 @@ td, th {
     border-bottom: 1px solid #AAA;
 }
 
+#commits tr.group td {
+    padding: 10px;
+    font-size: 120%;
+}
+
 #commits tr.smoke.doubt {
     background-color: #EEC;
 }

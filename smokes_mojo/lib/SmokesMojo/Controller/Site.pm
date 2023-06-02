@@ -23,7 +23,7 @@ sub index ($self) {
 		      ordering => { '<=', $start_commit->ordering }
 		    },
 		    {
-			columns => [ qw(sha subject ordering) ],
+			columns => [ qw(id sha subject ordering seen_at parent_id) ],
 			order_by => "ordering DESC",
 			rows => 50,
 			page => $page,
@@ -47,7 +47,7 @@ sub index ($self) {
 	$commits = $crs->search(
 	    { branch => $branch },
 	    {
-		columns => [ qw(sha subject ordering) ],
+		columns => [ qw(id sha subject ordering parent_id seen_at) ],
 		order_by => "ordering DESC",
 		rows => 50,
 		page => $page,
@@ -57,9 +57,12 @@ sub index ($self) {
     while (my $commit = $commits->next) {
 	push @commits,
 	{
+	    id => $commit->id,
 	    sha => $commit->sha,
 	    subject => $commit->subject,
 	    ordering => $commit->ordering,
+	    seen_at => $commit->seen_at,
+	    parent_id => $commit->parent_id,
 	    smokes => [
 		$prs->search({sha => $commit->sha},
 			     { order_by => "os" })
@@ -82,6 +85,38 @@ sub index ($self) {
 	    $smoke = \%s;
 	}
     }
+
+    my %work_commits = map { $_->{id} => $_ } @commits;
+    my %commits = %work_commits;
+    my %parents = map { $_->{parent_id} => $_->{id} } @commits;
+    my @work;
+    my @groups;
+    while (%work_commits) {
+	my @check = sort {
+	    $b->{seen_at} cmp $a->{seen_at} ||
+		$b->{ordering} <=> $a->{ordering}
+	} values %work_commits;
+	my $latest_seen = $check[0]{seen_at};
+	my $latest = $check[0];
+	push @groups, +{
+	    commits => [ $latest ],
+	    seen_at => $latest->{seen_at},
+	};
+	push @work, $latest;
+	delete $work_commits{$latest->{id}};
+	while ($work_commits{$latest->{parent_id}}) {
+	    $latest = $work_commits{$latest->{parent_id}};
+	    delete $work_commits{$latest->{id}};
+	    push @work, $latest;
+	    push $groups[-1]{commits}->@*, $latest;
+	}
+    }
+    @commits = @work;
+    for my $commit (@commits) {
+	my $parent = $commits{$commit->{parent_id}};
+	$commit->{parent_sha} = $parent ? $parent->{sha} : "";
+    }
+    
     my $branches = $schema->storage->dbh_do
 	(
 	 sub {
@@ -108,6 +143,7 @@ SQL
     push @branches, grep !$bseen{$_}, @$branches;
 
     $self->render(commits => \@commits,
+		  groups => \@groups,
 		  branch => $branch,
 	          message => $self->stash("message"),
 		  branches => \@branches,

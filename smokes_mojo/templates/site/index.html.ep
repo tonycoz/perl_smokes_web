@@ -15,6 +15,9 @@ Branch:<div class="autocomplete">
 % if ($message) {
 <p class="error"><%= $message %></p>
 % }
+% if (@$groups > 1) {
+<p>There's more than one sequence of commits recorded for this branch</p>
+% }
 <form id="filters" action="">
 <table id="commits">
   <tr class="filters">
@@ -27,9 +30,17 @@ Branch:<div class="autocomplete">
     <td></td>
     <td><input type="reset" value="Clear Filter"></td>
   </tr>
-% for my $commit (@$commits) {
+% for my $group (@$groups) {
+%   if (@$groups > 1) {
+<tr class="group">
+<td colspan="8">
+This sequence of commits was last seen <%= $group->{seen_at} %></td>
+</td>
+</tr>
+%   }
+%   for my $commit ($group->{commits}->@*) {
   <tr class="commit">
-    <td><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>"><%= substr($commit->{sha}, 0, 12) %></a></td>
+    <td><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= substr($commit->{sha}, 0, 12) %></a></td>
     <td colspan="6"><%= $commit->{subject} %></td>
     <td></td>
   </tr>
@@ -53,6 +64,7 @@ Branch:<div class="autocomplete">
 % }
     </td>
   </tr>
+%   }
 %   }
 % }
 </table>
