@@ -220,7 +220,16 @@ sub raw ($self) {
 	my $raw = $r->raw_report;
 	$raw =~ tr/\r//d;
 	my ($headers, $body) = split /\n\n/, $raw, 2;
-	my @headers = split /\n/, $headers;
+	my @raw_headers = split /\n/, $headers;
+	my @headers;
+	for my $raw_header (@raw_headers) {
+	    if (!@headers || $raw_header !~ /^\s/) {
+		push @headers, $raw_header;
+	    }
+	    else {
+		$headers[-1] .= $raw_header;
+	    }
+	}
 	@headers = grep /^(?:subject|message-id|content-type|mime-version|date|content-transfer-encoding|content-type):/i, @headers;
 	my $non_raw = join("\n", @headers) . "\n\n" . $body;
 	return $self->render(raw => $non_raw,
