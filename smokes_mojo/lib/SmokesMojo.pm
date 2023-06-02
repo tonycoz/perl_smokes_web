@@ -27,13 +27,14 @@ sub startup ($self) {
   # Router
   my $r = $self->routes;
 
-  # Normal route to controller
-  $r->get('/')->to('site#index');
-  $r->get('/raw/:id')->to("site#raw");
-  $r->get('/db/:id')->to("site#db");  
-  $r->get('/dbjson/<id:num>')->to("site#dbjson");  
-  $r->get('/dbreportjson/<id:num>')->to("site#dbreportjson");
+    # Normal route to controller
+    $r->get('/')->to('site#index');
     $r->get('/recent/')->to("site#recent");
+    $r->get('/changes/')->to("site#changes");
+    $r->get('/raw/:id')->to("site#raw");
+    $r->get('/db/:id')->to("site#db");  
+    $r->get('/dbjson/<id:num>')->to("site#dbjson");  
+    $r->get('/dbreportjson/<id:num>')->to("site#dbreportjson");
     $r->get('/dblog/<id:num>')->to("site#dblog");
     $r->get('/dblogtext/<id:num>')->to("site#dblogtext");
     $r->get('/api/reports_from_id/<id:num>')->to("api#reports_from_id");

@@ -1,0 +1,32 @@
+% layout 'default';
+% title 'Changes';
+<h2>Changes</h2>
+
+<h3>2 June 2023</h3>
+
+<ul>
+  <li>fix presentation of multiple commit sequences, this was
+  presenting all of the commits in each group rather than just the
+  commits for that group</li>
+</ul>
+
+<h3>31 May 2023</h3>
+
+<ul>
+  <li>branches that have been rebased or squashed would often mix
+  commits from before and after the rebase/squash, these should now be
+  distinguished</li>
+</ul>
+
+<h3>Rewrite - up to 28 May 2023</h3>
+<ul>
+  <li>rewrite using Mojo/DBIx::Class (rather than the horrible
+  CGI/pure Mason)</li>
+  <li>do my own SmokeDB report presentation for speed</li>
+  <li>start saving log contents and do my own SmokeDB log presentation
+  for speed</li>
+  <li>make the filters more obvious (after feedback from khw)</li>
+  <li>hovering over report lines now highlights the line to make it
+    easier to distinguish that line from others</li>
+  <li>filter out most headers when presenting nntp reports</li>
+  </ul>

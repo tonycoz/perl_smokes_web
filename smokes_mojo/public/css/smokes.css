@@ -138,6 +138,10 @@ menu li a {
     text-decoration: none;
 }
 
+menu li.right {
+    float: right;
+}
+
 .filters input {
   width: 100%;
   border: none;

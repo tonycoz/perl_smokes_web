@@ -304,4 +304,9 @@ He was lazy and only supported browsers with gzip support.
 TEXT
     }
 }
+
+sub changes ($self) {
+    $self->render();
+}
+
 1;
