@@ -1,4 +1,4 @@
-= perl.develop-help.com
+= perl.develop-help.com =
 
 This is the new implementation of perl.develop-help.com, an aggregator
 of smoke or community provided build and test reports for the perl
