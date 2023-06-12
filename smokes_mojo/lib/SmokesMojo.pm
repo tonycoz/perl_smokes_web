@@ -39,6 +39,7 @@ sub startup ($self) {
     $r->get('/dblogtext/<id:num>')->to("site#dblogtext");
     $r->get('/api/reports_from_id/<id:num>')->to("api#reports_from_id");
     $r->get('/api/report_data/<id:num>')->to("api#report_data");
+    $r->post('/api/postreport/post')->to("api#post_report");
 }
 
 sub schema ($self) {

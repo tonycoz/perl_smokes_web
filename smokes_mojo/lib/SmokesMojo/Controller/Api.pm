@@ -5,6 +5,7 @@ use SmokeReports::Sensible;
 use Cpanel::JSON::XS;
 use IO::Uncompress::Gunzip qw(gunzip);
 use IO::Compress::Gzip qw(gzip);
+use Digest::SHA qw(sha256_hex);
 
 sub reports_from_id ($self) {
     my $schema = $self->app->schema;
@@ -53,6 +54,62 @@ sub report_data ($self) {
 	print STDERR "Just bytes\n";
 	$self->render(data => $pr->raw_report, format => 'json');
     }
+}
+
+sub _fail_text ($self, $msg) {
+    $self->render(format => "text", text => <<EOS);
+FAIL
+$msg
+EOS
+}
+
+# Private API used to post NNTP reports received by mail
+# I'm subscribed to daily-built-reports, so the reports
+# end up in my inbox, this saves having to poll the nntp server
+# and means that nntp reports tend to arrive immediately rather
+# than waiting for the polling interval.
+sub post_report ($self) {
+    my $req = $self->req;
+    my $msgobj = $req->upload('msg')
+	or return $self->_fail_text("Missing msg upload");
+    my $time = $req->param('time')
+	or return $self->_fail_text("Missing time");
+    my $nntp_num = $req->param('nntp_num')
+	or return $self->_fail_text("Missing nntp_num");
+    my $msg_id = $req->param('msg_id')
+	or return $self->_fail_text('Missing msg_id');
+    my $hash = $req->param('hash')
+	or return $self->_fail_text('Missing hash');
+    my $now = time();
+    $time >= $now - 60 && $time <= $now + 60
+	or return $self->_fail_text('Time out of sync');
+    my $msg = $msgobj->asset->slurp;
+    my $post_key = $self->app->config->{post_key}
+        or die "Missing post_key from config";
+    my $myhash = sha256_hex($post_key . $time . $nntp_num . $msg_id . $msg );
+    $myhash eq $hash
+	or $self->_fail_text('Hash mismatch');
+    my $schema = $self->app->schema;
+    my $dbrs = $schema->resultset("DailyBuildReport");
+    my $report = $dbrs->find({ nntp_num => $nntp_num });
+    my $dup = "";
+    if ($report) {
+	$dup = "Found: " . $report->id;
+    }
+    else {
+        $report = $dbrs->create
+	  ({
+	    nntp_num => $nntp_num,
+	    msg_id => $msg_id,
+	    raw_report => $msg,
+	   });
+    }
+    $self->render(format => "text", text => <<EOS);
+DONE
+$dup
+EOS
+
+    # FIXME: trigger parse of the report
 }
 
 1;
