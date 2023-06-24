@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+use strict;
+use MIME::Parser;
+use Getopt::Long;
+use Digest::SHA qw(sha256_hex);
+use DateTime::Format::Mail;
+use SmokeReports::ParsedToDb qw(parse_report_to_db);
+use SmokeReports::Dbh;
+
+my $verbose;
+GetOptions("v|verbose" => \$verbose);
+
+++$|;
+
+my $dbh = SmokeReports::Dbh->dbh;
+
+my $total_count;
+if ($verbose) {
+  ($total_count) = $dbh->selectrow_array(<<SQL) or die $dbh->errstr;
+select count(*)
+from daily_build_reports d left join  parsed_reports p on d.nntp_num = p.nntp_id
+where p.nntp_id is null
+SQL
+}
+
+my $done_count = 0;
+while (my @reports = _get_reports($dbh)) {
+  if ($verbose) {
+    print "$done_count / $total_count\r";
+  }
+  for my $report (@reports) {
+      parse_report_to_db($report, $verbose);
+  }
+  $done_count += @reports;
+}
+
+sub _get_reports {
+  my $dbh = shift;
+
+  my $sth = $dbh->prepare(<<SQL)
+  select d.id, raw_report, nntp_num, d.msg_id
+      from daily_build_reports d
+      left join parsed_reports p on d.nntp_num = p.nntp_id
+      where p.nntp_id is null
+      order by id desc
+      limit 50
+      
+SQL
+      or die $dbh->errstr;
+  $sth->execute
+      or die $sth->errstr;
+
+  my @rows;
+  while (my $row = $sth->fetchrow_hashref) {
+    push @rows, { %$row };
+  }
+
+  return @rows;
+}

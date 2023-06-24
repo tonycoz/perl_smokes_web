@@ -40,6 +40,7 @@ sub parse_report {
        host => "",
        compiler => "",
        body => "",
+       nntp_id => $report->{nntp_num},
        from_email => "",
        error => "",
        when_at => undef,
@@ -62,7 +63,7 @@ sub parse_report {
 sub _process_report {
   my ($result, $report) = @_;
 
-  my $entity = _parser()->parse_data($report);
+  my $entity = _parser()->parse_data($report->{raw_report});
   my $head = $entity->head;
   my @body = $entity->bodyhandle->as_lines;
   $result->{body} = join '', @body;
@@ -146,21 +147,6 @@ sub _process_report {
   $result->{msg_id} = $entity->get('Message-Id')
       or die "No Message-Id header found\n";
   chomp($result->{msg_id});
-
-  # if this comes from a new enough version of Test::Smoke assume the
-  # smokedb will return it at some point.  First find the signature,
-  # which might not be last
-  # LINE: for my $line (reverse @body) {
-  #   if ($line =~ /Report by Test::Smoke v([0-9._]+)/) {
-  #     my $vers = eval $1;
-  #     if ($vers >= 1.49
-  # 	  && !($result->{os} eq 'MSWin32' && $result->{from_email} =~ /greer/)
-  # 	  && !($result->{os} =~ m(^os/390))) {
-  # 	die "This should be in the smoke db, skipping";
-  #     }
-  #     last LINE;
-  #   }
-  # }
 
   return 1;
 }
