@@ -5,4 +5,10 @@
     "user":"database user",
     "password":"database password"
   }
+  "logpath":"/path/to/store/smokedb/log/contents",
+  "post_key":"key-used-in-posting-nntp-messages-received-via-mailing-list",
+  "coresmokedb_url":"https://perl5.test-smoke.org/api/",
+  "commits": {
+    "git_tree":"/path/with/git/clone/with/upstream/called/origin"
+  }
 }
