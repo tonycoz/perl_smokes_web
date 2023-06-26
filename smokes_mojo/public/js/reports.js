@@ -30,21 +30,21 @@ window.addEventListener("load", (event) => {
 
 	    var cols = tr.getElementsByTagName("td");
 	    if (status != "") {
-		ok = match_regexp(cols[1].textContent, status);
+		ok = match_regexp(cols[0].textContent, status);
 	    }
 	    if (os != "" && ok) {
-		ok = match_regexp(cols[2].textContent, os);
+		ok = match_regexp(cols[1].textContent, os);
 	    }
 	    if (arch != "" && ok) {
-		ok = match_regexp(cols[3].textContent, arch);
+		ok = match_regexp(cols[2].textContent, arch);
 	    }
 	    if (cc != "" && ok) {
 		var sp = cols[4].getElementsByTagName("span");
-		var cc_text = sp.length ? sp[0].title : cols[4].textContent;
+		var cc_text = sp.length ? sp[0].title : cols[3].textContent;
 		ok = match_regexp(cc_text, cc);
 	    }
 	    if (from != "" && ok) {
-		ok = match_regexp(cols[5].textContent, from);
+		ok = match_regexp(cols[4].textContent, from);
 	    }
 
 	    if (ok) {
