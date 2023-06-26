@@ -7,7 +7,7 @@ body, th, td {
 
 table#commits {
     padding: 1px;
-    min-width: 1200px;
+    min-width: 800px;
 }
 
 #commits .compiler {
@@ -70,6 +70,16 @@ td, th {
 #commits .commit td {
     font-size: 14px;
     padding-top: 6px;
+}
+
+#commits .commit a {
+    color: #000;
+    text-decoration: none;
+}
+
+#commits .commit a:hover {
+    color: #222;
+    text-decoration: underline;
 }
 
 #dbreport .fail {

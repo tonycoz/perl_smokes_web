@@ -21,14 +21,13 @@ Branch:<div class="autocomplete">
 <form id="filters" action="">
 <table id="commits">
   <tr class="filters">
-    <td>Filter: <span title="Each filter is a JS regular expression possibly with ! before it to invert the selection">?</span></td>
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
     <td><input type="text" id="os" size="8" placeholder="filter os"/></td>
     <td><input type="text" id="arch" size="5" placeholder="filter arch" /></td>
     <td><input type="text" id="cc" size="10" placeholder="filter compiler" /></td>
     <td><input type="text" id="from" size="10" placeholder="filter from" /></td>
-    <td></td>
-    <td><input type="reset" value="Clear Filter"></td>
+    <td>Filter: <span title="Each filter is a JS regular expression possibly with ! before it to invert the selection">?</span></td>
+   <td><input type="reset" value="Clear Filter"></td>
   </tr>
 % for my $group (@$groups) {
 %   if (@$groups > 1) {
@@ -40,15 +39,13 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %   }
 %   for my $commit ($group->{commits}->@*) {
   <tr class="commit">
-    <td><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= substr($commit->{sha}, 0, 12) %></a></td>
-    <td colspan="6"><%= $commit->{subject} %></td>
+    <td colspan="6" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a></td>
     <td></td>
   </tr>
 %   for my $smoke ($commit->{smokes}->@*) {
 %     my $status = $smoke->{status};  
 %     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
   <tr class="smoke <%= $class %>" id="report<%= $smoke->{id} %>">
-    <td></td>
     <td class="status"><%= $status %></td>
 	<td><%= $smoke->{os} %></td>
 	<td><%= $smoke->{cpu} %></td>
