@@ -49,7 +49,7 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
   <tr class="smoke <%= $class %>" id="report<%= $smoke->{id} %>">
     <td></td>
-    <td><%= $status %></td>
+    <td class="status"><%= $status %></td>
 	<td><%= $smoke->{os} %></td>
 	<td><%= $smoke->{cpu} %></td>
 	<td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></span></td>

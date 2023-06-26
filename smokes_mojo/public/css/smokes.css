@@ -38,57 +38,30 @@ td, th {
     font-size: 120%;
 }
 
-#commits tr.smoke.doubt {
+#commits tr.doubt .status {
     background-color: #EEC;
 }
 
-#commits tr.smoke.doubt:hover {
-    background-color: #DDB;
-}
-
-#commits tr.smoke.doubt:nth-child(even) {
-    background-color: #CC8;
-}
-
-#commits tr.smoke.doubt:nth-child(even):hover {
-    background-color: #AA7;
-}
-
-#commits tr.fail {
+#commits tr.fail .status {
     background-color: #F99;
 }
 
-#commits tr.fail:nth-child(even) {
-    background-color: #FAA;
+#commits tr.pass .status {
+    background-color: #CFC;
 }
 
-#commits tr.fail:hover {
-    background-color: #F77;
-}
-
-#commits tr.fail:nth-child(even):hover {
-    background-color: #F88;
-}
-
-#commits tr.smoke.pass:hover {
+#commits tr:nth-child(even) {
     background-color: #EEE;
 }
 
-#commits tr.smoke.pass:nth-child(even) {
-    background-color: #BFB;
+#commits tr:hover {
+    background-color: #CCC;
 }
 
-#commits tr.pass:hover:nth-child(even) {
-    background-color: #9D9;
-}
 
 #commits tr.hide {
     display: none;
 }
-
-/*#commits tr.smoke:hover {
-    background-color: #CCF;
-}*/
 
 #commits tr.commit {
     background-color: #DDD;
