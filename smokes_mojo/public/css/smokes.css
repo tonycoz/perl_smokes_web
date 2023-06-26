@@ -50,11 +50,11 @@ td, th {
     background-color: #CFC;
 }
 
-#commits tr:nth-child(even) {
+#commits tr.smoke:nth-child(even) {
     background-color: #EEE;
 }
 
-#commits tr:hover {
+#commits tr.smoke:hover {
     background-color: #CCC;
 }
 
