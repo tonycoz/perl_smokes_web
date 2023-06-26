@@ -2,6 +2,16 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>26 June 2023</h3>
+
+<ul>
+  <li>only colour the status with the status rather than the whole row, since it was a bit overpowering</li>
+  <li>remove the sha column, it was only useful for the commit rows and was otherwise a waste of space.  The commit subject is now a link to the commit.</li>
+  <li>sort smokes by os, host, id, previously it was only os.  I wanted to group the duplicate smoke reports (between DB and NNTP reports), this isn't perfect, but it's better than just os</li>
+  <li>clean up the compiler name specifically to work around NNTP report parsing.  This will be removed once NNTP report parsing is re-worked, which is waiting on the dev database being separate from the live database which depends on this iteration.</li>
+  <li>ported several of the back end tools to the new config system</li>
+</ul>
+
 <h3>2 June 2023</h3>
 
 <ul>
