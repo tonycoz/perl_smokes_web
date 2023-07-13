@@ -70,6 +70,7 @@ td, th {
 #commits .commit td {
     font-size: 14px;
     padding-top: 6px;
+    font-weight: 700;
 }
 
 #commits .commit a {
