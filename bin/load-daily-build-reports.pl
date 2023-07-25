@@ -77,4 +77,4 @@ SQL
 	 && defined($msg_id = $nntp->next));
 
 $nntp->quit;
-print "disconnected from $host\n" if $host;
+print "disconnected from $host\n" if $verbose;
