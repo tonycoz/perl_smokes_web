@@ -3,6 +3,7 @@ use v5.32.0;
 use strict;
 use warnings;
 use experimental;
+use builtin;
 
 sub import {
     strict->import;
@@ -11,6 +12,7 @@ sub import {
     feature->import(":5.32.0", "fc", "bitwise");
     experimental->import("re_strict", "regex_sets", "signatures");
     feature->unimport("switch", "indirect");
+    builtin->import(qw(true false trim));
 }
 
 1;
