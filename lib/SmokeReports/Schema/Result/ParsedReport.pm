@@ -4,10 +4,17 @@ use parent qw/DBIx::Class::Core/;
 use SmokeReports::Sensible;
 
 __PACKAGE__->table('parsed_reports');
-__PACKAGE__->add_columns(qw/id sha subject status os cpu cpu_count cpu_full/,
-			 qw/host compiler body nntp_id from_email error/,
-			 qw/when_at configuration branch duration/,
-			 qw/smokedb_id logurl msg_id uuid/);
+__PACKAGE__->add_columns
+  (
+   id =>
+   {
+    is_auto_increment => 1,
+    data_type => "integer",
+   },
+   qw/sha subject status os cpu cpu_count cpu_full/,
+   qw/host compiler body nntp_id from_email error/,
+   qw/when_at configuration branch duration/,
+   qw/smokedb_id logurl msg_id uuid/);
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });
