@@ -16,18 +16,16 @@ SQL
 sub parse_report_to_db {
     my ($report, $verbose) = @_;
 
-    my $result = parse_report($report, $verbose);
+    my $result = parse_report($report->raw_report, $verbose);
+    $result->{nntp_id} = $report->nntp_num;
     parsed_report_to_db($result, $verbose);
 }
 
 sub parsed_report_to_db {
     my ($parsed, $verbose) = @_;
 
-    my $dbh = SmokeReports::Dbh->dbh;
-    my $sth = $dbh->prepare($insert_sql)
-	or die $dbh->errstr;
-    $sth->execute(@$parsed{@insert_cols})
-	or die "Cannot insert: ", $sth->errstr;
+    my $rs = SmokeReports::Dbh->schema->resultset("ParsedReport");
+    $rs->create($parsed);
 }
 
 1;

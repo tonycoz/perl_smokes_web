@@ -14,4 +14,11 @@ __PACKAGE__->add_columns
   );
 __PACKAGE__->set_primary_key("id");
 
+__PACKAGE__->might_have
+  (
+   parsed_report => 'SmokeReports::Schema::Result::ParsedReport',
+   { "foreign.nntp_id" => "self.nntp_num" },
+   { join_type => "LEFT OUTER" }
+  );
+
 1;

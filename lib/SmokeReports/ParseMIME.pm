@@ -4,7 +4,7 @@ use Exporter qw(import);
 use MIME::Parser;
 use DateTime::Format::Mail;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 our @EXPORT_OK = qw(parse_report);
 
@@ -26,7 +26,7 @@ my $parser;
 }
 
 sub parse_report {
-    my ($report, $verbose) = @_;
+    my ($report_data, $verbose) = @_;
 
     my %result =
       (
@@ -40,7 +40,6 @@ sub parse_report {
        host => "",
        compiler => "",
        body => "",
-       nntp_id => $report->{nntp_num},
        from_email => "",
        error => "",
        when_at => undef,
@@ -50,7 +49,7 @@ sub parse_report {
        msg_id => undef,
       );
     eval {
-      _process_report(\%result, $report);
+      _process_report(\%result, $report_data);
       1;
     } or do {
       print "\nError: $@\n" if $verbose;
@@ -61,9 +60,9 @@ sub parse_report {
 }
 
 sub _process_report {
-  my ($result, $report) = @_;
+  my ($result, $report_data) = @_;
 
-  my $entity = _parser()->parse_data($report->{raw_report});
+  my $entity = _parser()->parse_data($report_data);
   my $head = $entity->head;
   my @body = $entity->bodyhandle->as_lines;
   $result->{body} = join '', @body;
