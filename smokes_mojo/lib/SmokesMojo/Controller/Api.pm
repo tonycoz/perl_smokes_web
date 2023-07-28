@@ -1,6 +1,7 @@
 package SmokesMojo::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
+use SmokeReports::ParsedToDb "parse_report_to_db";
 
 use Cpanel::JSON::XS;
 use IO::Uncompress::Gunzip qw(gunzip);
@@ -109,7 +110,7 @@ DONE
 $dup
 EOS
 
-    # FIXME: trigger parse of the report
+    parse_report_to_db($report, false);
 }
 
 1;
