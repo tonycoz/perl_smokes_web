@@ -20,10 +20,7 @@ sub reports_from_id ($self) {
 	    order_by => "report_id",
 	    rows => 100,
 	});
-    $schema->storage->debug(1);
-    $schema->storage->debugfh(\*STDERR);
     my @ids = map { $_->report_id } $ids->all;
-    $schema->storage->debug(0);
 
     $self->render(json => \@ids);
 }
@@ -31,14 +28,12 @@ sub reports_from_id ($self) {
 sub report_data ($self) {
     my $schema = $self->app->schema;
     my $dbr = $schema->resultset("Perl5Smoke");
-    print STDERR "report ", $self->param("id") ,"\n";
     my $pr = $dbr->search({ report_id => $self->param("id") })->single;
     unless ($pr) {
 	$self->render(template => "does_not_exist");
     }
     my $lf = $pr->log_filename($self->app->config);
     if ($lf && -f $lf) {
-	print STDERR "Adding log\n";
 	my $json = Cpanel::JSON::XS->new->utf8;
 	my $dec = $json->decode($pr->raw_report);
 	my $data;
@@ -52,7 +47,6 @@ sub report_data ($self) {
 	$self->render(json => $dec);
     }
     else {
-	print STDERR "Just bytes\n";
 	$self->render(data => $pr->raw_report, format => 'json');
     }
 }
