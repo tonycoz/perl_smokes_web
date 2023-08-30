@@ -2,6 +2,15 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>30 August 2023</h3>
+
+<ul>
+  <li>clean up some debugging output in the smokedb api emulation</li>
+  <li>add /api/nntp_from_id/someid and /api/nntp_data/someid for
+  internal transfers to the dev db without loading the real nntp
+  server, though it's available for others to use too</li>
+</ul>
+
 <h3>28 July 2023</h3>
 
 <ul>
