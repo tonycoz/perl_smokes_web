@@ -51,6 +51,33 @@ sub report_data ($self) {
     }
 }
 
+sub nntp_from_id ($self) {
+    my $schema = $self->app->schema;
+    my $dbr = $schema->resultset("DailyBuildReport");
+    my $ids = $dbr->search(
+        {
+	    nntp_num => { '>=', $self->param("id") },
+	},
+	{
+	    columns => [ "nntp_num" ],
+	    order_by => "nntp_num",
+	    rows => 100,
+	});
+    my @ids = map { $_->nntp_num } $ids->all;
+
+    $self->render(json => \@ids);
+}
+
+sub nntp_data ($self) {
+    my $schema = $self->app->schema;
+    my $dbr = $schema->resultset("DailyBuildReport");
+    my $pr = $dbr->search({ nntp_num => $self->param("id") })->single;
+    unless ($pr) {
+	return $self->render(template => "does_not_exist");
+    }
+    $self->render(text => $pr->raw_report, format => "txt");
+}
+
 sub _fail_text ($self, $msg) {
     $self->render(format => "text", text => <<EOS);
 FAIL

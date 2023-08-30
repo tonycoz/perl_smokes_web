@@ -40,6 +40,8 @@ sub startup ($self) {
     $r->get('/api/reports_from_id/<id:num>')->to("api#reports_from_id");
     $r->get('/api/report_data/<id:num>')->to("api#report_data");
     $r->post('/api/postreport/post')->to("api#post_report");
+    $r->get('/api/nntp_from_id/<id:num>')->to("api#nntp_from_id");
+    $r->get('/api/nntp_data/<id:num>')->to("api#nntp_data");
 }
 
 sub schema ($self) {
