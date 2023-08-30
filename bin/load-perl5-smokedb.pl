@@ -97,6 +97,7 @@ while ($ids && @$ids) {
     }
 
     my $url = "${data_url}$id";
+    print "Fetching $url\n" if $verbose >= 10;
     my $result = $ua->get($url);
     $result->is_success
 	or die "Cannot fetch report from $url: ", $result->status_line, "\n", $result->decoded_content;
