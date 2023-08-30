@@ -10,7 +10,7 @@ sub import {
     warnings->import;
     feature->unimport(":all"); # disable indirect etc
     feature->import(":5.32.0", "fc", "bitwise");
-    experimental->import("re_strict", "regex_sets", "signatures");
+    experimental->import("re_strict", "regex_sets", "signatures", "builtin");
     feature->unimport("switch", "indirect");
     builtin->import(qw(true false trim));
 }
