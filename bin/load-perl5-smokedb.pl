@@ -43,18 +43,17 @@ my $logpath = $config->{logpath}
 my $data_url = "${base_url}report_data/";
 my $reports_from_url = "${base_url}reports_from_id/";
 
-my $dbh = SmokeReports::Dbh->dbh;
-
-$dbh->{RaiseError} = 1;
+my $schema = SmokeReports::Dbh->schema;
+my $sdb = $schema->resultset("Perl5Smoke");
 
 my $start_id;
 if ($all) {
   $start_id = 1;
 }
 else {
-  ($start_id) = $dbh->selectrow_array(<<SQL);
-select max(report_id) from perl5_smokedb
-SQL
+  
+  $start_id = $sdb->get_column("report_id")->max;
+
   # just in case we were in the middle of a transaction
   $start_id -= 5;
   if ($start_id < 0) {
@@ -64,15 +63,9 @@ SQL
 print "Start id $start_id\n" if $verbose;
 
 my %seen_ids;
-my $sth = $dbh->prepare(<<SQL)
-select report_id from perl5_smokedb
-where report_id >= ?
-SQL
-  or die "Cannot prepare ids sql: ", $dbh->errstr;
-$sth->execute($start_id)
-  or die "Cannot execute ids sql: ", $dbh->errstr;
-while (my ($row) = $sth->fetchrow_array) {
-  $seen_ids{$row} = undef;
+my $report_id_q = $sdb->get_column("report_id");
+while (defined(my $seen_id = $report_id_q->next)) {
+  $seen_ids{$seen_id} = undef;
 }
 
 print "Loaded seen_ids\n" if $verbose;
@@ -119,11 +112,13 @@ while ($ids && @$ids) {
 
     $seen_ids{$id} = undef;
 
-    $dbh->do(<<SQL, undef, $json_data, $id, time())
-insert into perl5_smokedb(raw_report, report_id, fetched_at)
-  values(?,?,?)
-SQL
-      or die "Cannot store report: ",$dbh->errstr;
+    my %row =
+      (
+       raw_report => $json_data,
+       report_id => $id,
+       fetched_at => time(),
+      );
+    $sdb->create(\%row);
 
     $verbose
       and print STDERR "Fetched $id\n";
