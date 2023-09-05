@@ -19,13 +19,22 @@ else {
   $verbose = 0;
 }
 
-my $dbh = SmokeReports::Dbh->dbh;
+my $schema = SmokeReports::Dbh->schema;
+my $dbr = $schema->resultset("DailyBuildReport");
 
-$dbh->{RaiseError} = 1;
-
-my ($start_num) = $dbh->selectrow_array(<<SQL);
-select max(nntp_num) from daily_build_reports
-SQL
+my $nntp_last = $dbr->search(
+    { },
+    {
+	columns => [ "nntp_num" ],
+	order_by => "nntp_num desc",
+	rows => 1
+    });
+my ($start_num) = map { $_->nntp_num } $nntp_last->all;
+# just in case we were in the middle of a transaction
+$start_num -= 5;
+if ($start_num < 0) {
+    $start_num = 1;
+}
 
 my $nntp = Net::NNTP->new($host)
   or die $@;
@@ -44,18 +53,17 @@ $start_num -= 200;
 
 $start_num < $first and $start_num = $first;
 
+print "starting $start_num\n" if $verbose > 1;
+
 my $count = 0;
 my $msg_id = $nntp->nntpstat($start_num);
 do {
   my ($nntp_num) = split ' ', $nntp->message;
 
   print "Message $nntp_num => $msg_id\n" if $verbose > 2;
-  
+
   # look for that msg id
-  my ($have_it) = $dbh->selectrow_array(<<SQL, {}, $msg_id);
-select count(*) from daily_build_reports
-where msg_id = ?
-SQL
+  my ($have_it) = $dbr->find({ msg_id => $msg_id });
 
   if ($have_it) {
     print "  have this message\n" if $verbose > 3;
@@ -66,10 +74,13 @@ SQL
       or die;
     my $text = join("", @$article);
 
-    $dbh->do(<<SQL, {}, $text, $nntp_num, $msg_id);
-insert into daily_build_reports(raw_report, nntp_num, msg_id)
-                       values(?,?,?)
-SQL
+    my %row =
+	(
+	 raw_report => $text,
+	 nntp_num => $nntp_num,
+	 msg_id => $msg_id
+	);
+    $dbr->create(\%row);
     #print "Added $nntp_num/$msg_id\n";
     #sleep 1;
   }
