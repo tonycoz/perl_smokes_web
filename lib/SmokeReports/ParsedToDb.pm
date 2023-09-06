@@ -5,27 +5,46 @@ use SmokeReports::Dbh;
 use Exporter "import";
 use SmokeReports::ParseMIME "parse_report";
 
-our @EXPORT_OK = qw(parse_report_to_db parsed_report_to_db);
+our @EXPORT_OK = qw(parse_report_to_db parsed_report_to_db
+		    parse_new_reports_to_db);
 
-my @insert_cols = qw(sha subject status os cpu cpu_count cpu_full host compiler body nntp_id from_email error when_at configuration branch duration msg_id logurl);
-my $insert_sql = <<SQL;
-insert into parsed_reports( sha, subject, status, os, cpu, cpu_count, cpu_full, host, compiler, body, nntp_id, from_email, error, when_at, configuration, branch, duration, msg_id, logurl)
-                    values(?,   ?,       ?,      ?,  ?,   ?,         ?,        ?,    ?,        ?,    ?,       ?,          ?,     ?,       ?,             ?,      ?,         ?,      ?)
-SQL
-
-sub parse_report_to_db {
-    my ($report, $verbose) = @_;
-
+sub parse_report_to_db($report, $verbose) {
     my $result = parse_report($report->raw_report, $verbose);
     $result->{nntp_id} = $report->nntp_num;
     parsed_report_to_db($result, $verbose);
 }
 
-sub parsed_report_to_db {
-    my ($parsed, $verbose) = @_;
-
+sub parsed_report_to_db($parsed, $verbose) {
     my $rs = SmokeReports::Dbh->schema->resultset("ParsedReport");
     $rs->create($parsed);
+}
+
+sub parse_new_reports_to_db($verbose) {
+    my $schema = SmokeReports::Dbh->schema;
+
+    my $reports = $schema->resultset('DailyBuildReport');
+
+    my $query = $reports->search
+	(
+	 { 'parsed_report.nntp_id' => undef },
+	 { join => 'parsed_report' }
+	);
+
+    my $total_count;
+    if ($verbose) {
+	($total_count) = $query->count;
+	print "0 / $total_count\r";
+    }
+
+    my $done_count = 0;
+    while (my $report = $query->next) {
+	parse_report_to_db($report, $verbose);
+	++$done_count;
+	if ($verbose) {
+	    print "$done_count / $total_count\r";
+	}
+    }
+    print "\n" if $verbose;
 }
 
 1;
