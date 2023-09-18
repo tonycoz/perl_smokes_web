@@ -4,7 +4,15 @@ use parent qw/DBIx::Class::Core/;
 use SmokeReports::Sensible;
 
 __PACKAGE__->table('perl5_smokedb');
-__PACKAGE__->add_columns(qw/id raw_report report_id fetched_at/);
+__PACKAGE__->add_columns
+    (
+     id =>
+     {
+	 is_auto_increment => 1,
+	 data_type => "integer",
+     },
+     qw/raw_report report_id fetched_at/
+    );
 __PACKAGE__->set_primary_key("id");
 
 # horribly hacky adaption from Perl5::CoreSmokeDB::Schema::Result::Report
