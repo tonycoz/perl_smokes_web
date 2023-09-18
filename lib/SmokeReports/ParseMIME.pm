@@ -64,9 +64,29 @@ sub _process_report {
 
   my $entity = _parser()->parse_data($report_data);
   my $head = $entity->head;
-  my @body = $entity->bodyhandle->as_lines;
+  my $bh = $entity->bodyhandle;
+  my @body;
+  if ($bh) {
+    @body = $bh->as_lines;
+  }
+  else {
+    my @parts = $entity->parts;
+  PARTS:
+    for my $part (@parts) {
+      my $ph = $part->head;
+      $ph->unfold;
+      my $ct = $part->effective_type;
+      if ($ct && $ct =~ m(^text/plain\b)i) {
+	@body = $part->bodyhandle->as_lines;
+	last PARTS;
+      }
+    }
+    unless (@body) {
+      die "No body text found\n";
+    }
+  }
   $result->{body} = join '', @body;
-  
+
   $head->unfold;
   my $subject = $entity->get("Subject");
   chomp $subject;
