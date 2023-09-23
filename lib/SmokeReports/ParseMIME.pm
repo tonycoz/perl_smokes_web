@@ -52,7 +52,6 @@ sub parse_report {
       _process_report(\%result, $report_data);
       1;
     } or do {
-      print "\nError: $@\n" if $verbose;
       $result{error} = $@;
     };
 
@@ -91,7 +90,7 @@ sub _process_report {
   my $subject = $entity->get("Subject");
   chomp $subject;
   $result->{subject} = $subject;
-  my $from = $entity ->get("From");
+  my $from = $entity->get("From");
   chomp $from;
   if ($from =~ /([a-z0-9.-]+\@[a-z0-9-.]+)/i) {
     $result->{from_email} = $1;
@@ -107,9 +106,13 @@ sub _process_report {
     $result->{when_at} = $date_parsed;
   }
 
+  $result->{msg_id} = $entity->get('Message-Id')
+      or die "No Message-Id header found\n";
+  chomp($result->{msg_id});
+
   my ($v, $status, $os, $cpu, $cpu_count, $cores, $cfg) =
     $subject =~ /^Smoke \[([0-9.a-zA-Z_\/!\+-]*)\] \S+ (PASS(?:-so-far)?|FAIL\(.+\)) (.*)\s\((.*)\/(?:([0-9]+) cpu(?:\[([0-9]+) cores\])?)?\)(?:\s+\{([^\{\}]+)\})?\s*$/
-      or die "Cannot parse subject\n";
+      or die "Cannot parse subject\n$subject\n";
   $result->{status} = $status;
   $result->{os} = $os;
   $result->{cpu} = $cpu;
@@ -126,15 +129,21 @@ sub _process_report {
     $result->{logurl} = $1;
   }
   # some reports get stuff added at the front, scan for the prologue
-  while (@body && $body[0] !~ /^Automated smoke report /) {
+  while (@body && $body[0] !~ /^\s*Automated smoke report /) {
     shift @body;
   }
   @body
     or die "No report prologue found in body\n";
 
+  if ($body[0] =~ /^(\s+)?/) {
+    # some old rocket software reports have a space before each line
+    my $leading = $1;
+    s/^$leading// for @body;
+  }
+
   # first line should be an intro
   my $first = shift @body;
-  my ($sha) = $first =~ /^Automated smoke report for (?:branch [\w\\\/-]+ )?[0-9.]+ patch ([0-9a-f]+)/
+  my ($sha) = $first =~ /^Automated smoke report for (?:branch [\w.\\\/+-]+ )?[0-9.]+ patch ([0-9a-f]+)/
     or die "Cannot parse SHA from '$first'\n";
   $result->{sha} = $sha;
   # the os390 reports include a describe line before the host line
@@ -142,20 +151,49 @@ sub _process_report {
   while (@body && $body[0] !~ /^([a-z.0-9-]+):\s*(.*)/i) {
     shift @body;
   }
-  my ($host_line, $os_line, $cc_line, $dur_line) = @body;
+  my $host_line = shift @body;
+  my $os_line = shift @body;
   my ($host, $cpu_full) = $host_line =~ /^([a-z.0-9-]+):\s*(.*)/i
     or die "Cannot parse host line: $host_line\n";
   $result->{host} = $host;
   $result->{cpu_full} = $cpu_full;
 
-  my ($cc) = $cc_line =~ /^\s+using\s+(.* version.*)$/
-    or die "Cannot parse CC line: $cc_line\n";
-  $result->{compiler} = $cc;
+  my @cc;
+  while (@body && $body[0] =~ /^\s+using\s+(\S(?:.*\S)?)\s+version(.*)/) {
+    my ($cmd, $ver) = ($1, $2);
+    $ver =~ s/^\s+//;
+    my $num = 1;
+    if ($ver =~ s/ \(\*(\d+)\)\s*$//) {
+      $num = $1;
+    }
+    push @cc, { cc => $cmd, version => $ver, index => $num };
+    shift @body;
+  }
+  unless (@cc) {
+    # some reports don't have the " version " so guess
+    if (@body && $body[0] =~ /^(.*?) ([a-z]\d\.\d+.*)/i) {
+      push @cc, { cc => $1, version => $2, index => 1 };
+    }
+  }
+  unless (@cc) {
+    my $line = @body ? $body[0] : "<no line>";
+    die "No compiler lines seen\n$line\n";
+  }
+  $result->{compiler} = "$cc[0]{cc} $cc[0]{version}";
 
-  my ($hour, $minute) = ( 0, 0 );
-  $dur_line =~ /([0-9]+) hour/ and $hour = $1;
-  $dur_line =~ /([0-9]+) minute/ and $minute = $1;
-  $result->{duration} = $hour * 3600 + $minute * 60;
+  my ($day, $hour, $minute) = ( 0, 0 );
+  if (@body && $body[0] =~ /^\s+smoketime
+                            (?:\s+(\d+) days?)?
+			    (?:\s+(\d+) hours?)?
+			    (?:\s+(\d+) minutes?)?\s*$
+			   /x) {
+    ($day, $hour, $minute) = ( $1, $2, $3 );
+    $day    ||= 0;
+    $hour   ||= 0;
+    $minute ||= 0;
+    shift @body;
+  }
+  $result->{duration} = $day * 86_400 + $hour * 3600 + $minute * 60;
 
   if (@body && $body[-1] =~ /^Configuration: (\w+)$/) {
     $result->{configuration} = $1;
@@ -163,12 +201,8 @@ sub _process_report {
   if (@body > 1 && $body[-2] =~ /^Branch: ([\w\/-]+)$/) {
     $result->{branch} = $1;
   }
-  $result->{msg_id} = $entity->get('Message-Id')
-      or die "No Message-Id header found\n";
-  chomp($result->{msg_id});
 
   return 1;
 }
-
 
 1;
