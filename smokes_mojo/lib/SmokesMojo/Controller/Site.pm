@@ -82,7 +82,6 @@ sub index ($self) {
 		qw(from original_url report_url)
 		);
 	    $s{logurl} = $smoke->more_logurl($self->app->config);
-	    $s{compiler} =~ s/ version / /; # FIXME
 	    $smoke = \%s;
 	}
     }
