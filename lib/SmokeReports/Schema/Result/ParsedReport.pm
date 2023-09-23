@@ -14,10 +14,12 @@ __PACKAGE__->add_columns
    qw/sha subject status os cpu cpu_count cpu_full/,
    qw/host compiler body nntp_id from_email error/,
    qw/when_at configuration branch duration/,
-   qw/smokedb_id logurl msg_id uuid/);
+   qw/smokedb_id logurl msg_id uuid need_update/);
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });
+__PACKAGE__->belongs_to('nntp', 'SmokeReports::Schema::Result::DailyBuildReport',
+			{ 'foreign.nntp_num' => 'self.nntp_id' });
 
 sub from ($self) {
     my $from = $self->from_email;
