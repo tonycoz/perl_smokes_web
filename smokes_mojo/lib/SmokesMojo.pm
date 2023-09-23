@@ -6,6 +6,7 @@ use Mojo::File qw(curfile);
 use lib path(curfile())->parent->parent->parent->parent->child("lib")->stringify;
 use SmokeReports::Schema;
 use SmokeReports::Sensible;
+use SmokeReports::Dbh;
 use FindBin;
 
 # This method will run once at server start
@@ -46,14 +47,7 @@ sub startup ($self) {
 }
 
 sub schema ($self) {
-    unless ($self->{_schema}) {
-	my $dbc = $self->config->{db};
-	$self->{_schema} =
-	    SmokeReports::Schema
-	    ->connect(@{$dbc}{qw(dsn user password)});
-    }
-
-    $self->{_schema};
+    return SmokeReports::Dbh->schema;
 }
 
 1;

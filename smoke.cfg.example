@@ -3,7 +3,10 @@
   "db": {
     "dsn":"dbi:mysql:databasename
     "user":"database user",
-    "password":"database password"
+    "password":"database password",
+    "attr": {
+        "mysql_enable_utf8":1
+    }
   }
   "logpath":"/path/to/store/smokedb/log/contents",
   "post_key":"key-used-in-posting-nntp-messages-received-via-mailing-list",

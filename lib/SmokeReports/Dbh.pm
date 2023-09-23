@@ -21,7 +21,9 @@ use DBI;
 	      or die "Missing user from db config";
 	    my $password = $dbconfig->{password}
 	      or die "Missing password from db config";
-	    $dbh = DBI->connect($dsn, $user, $password, { mysql_enable_utf8 => 1 })
+	    my $attr = $dbconfig->{attr}
+	      or die "Missing attr from db config";
+	    $dbh = DBI->connect($dsn, $user, $password, $attr)
 		or die $DBI::errstr;
 	}
 
@@ -43,8 +45,9 @@ sub schema {
       or die "Missing user from db config";
     my $password = $dbconfig->{password}
       or die "Missing password from db config";
-    $schema = SmokeReports::Schema->connect($dsn, $user, $password,
-					    $dbconfig->{attr})
+    my $attr = $dbconfig->{attr}
+      or die "Missing attr from db config";
+    $schema = SmokeReports::Schema->connect($dsn, $user, $password, $attr)
   }
 
   $schema;
