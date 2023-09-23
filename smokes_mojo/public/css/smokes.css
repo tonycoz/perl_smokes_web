@@ -21,6 +21,13 @@ table#commits {
     white-space: nowrap;
 }
 
+#unparsed .subject {
+    width: 40em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 table {
     border-left: 1px solid #AAA;
     border-top: 1px solid #AAA;

@@ -355,4 +355,33 @@ sub changes ($self) {
     $self->render();
 }
 
+sub unparsed ($self) {
+    my $page = $self->param("page");
+    defined $page && $page =~ /^[1-9][0-9]*$/
+	or $page = 1;
+    my $page_size = 40;
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("ParsedReport");
+    my $errors = $prs->search
+	(
+	 {
+	     error => { '!=', '' },
+	 },
+	 {
+	     order_by => "id desc",
+	     columns => [ qw(id nntp_id smokedb_id subject error) ],
+	 }
+	);
+    my $count = $errors->count;
+    my $page_count = int(($count + $page_size - 1) / $page_size);
+    $errors = $errors->search({}, { rows => $page_size, page => $page });
+    my @pages = map +{
+	page => $_,
+	current => $_ == $page
+    }, 1 .. $page_count;
+    $self->render(errors => [ $errors->all ],
+		  page => $page,
+		  pages => \@pages);
+}
+
 1;

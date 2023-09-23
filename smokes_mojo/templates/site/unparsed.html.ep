@@ -1,0 +1,28 @@
+% layout 'default';
+% title 'Unparsable reports';
+
+<p>This is intended mostly for troubleshooting.</p>
+<p>There are some old reports that aren't parsable because they aren't really reports.</p>
+
+% for my $p (@$pages) {
+%   if ($p->{current}) {
+[ <%= $p->{page} %> ]
+%   }
+%   else {
+<a href="/unparsed/?page=<%= $p->{page} %>">[ <%= $p->{page} %> ]</a>
+%   }
+% }
+<table id="unparsed">
+  <tr>
+    <th>Id</th>
+    <th>Subject</th>
+    <th>Error</th>
+  </tr>
+% for my $error (@$errors) {
+  <tr>
+    <td><a href="/raw/<%= $error->nntp_id %>"><%= $error->nntp_id %></a></td>
+    <td><div class="subject" title="<%= $error->subject %>"><%= $error->subject %></div></td>
+    <td><%= $error->error %></td>
+  </tr>
+% }
+</table>
