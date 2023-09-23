@@ -4,7 +4,7 @@ use Encode;
 use SmokeReports::Config;
 use SmokeReports::Dbh;
 use Getopt::Long;
-
+use warnings;
 
 my $verbose;
 
@@ -22,31 +22,34 @@ my $git_tree = $config->{commits}{git_tree}
 chdir $git_tree
   or die "Cannot chdir '$git_tree': $!\n";
 
-my $dbh = SmokeReports::Dbh->dbh;
+my $schema = SmokeReports::Dbh->schema;
+my $gc = $schema->resultset("GitCommit");
+my $gb = $schema->resultset("GitBranch");
 
 my %entries;
 
 {
   print "loading existing\n" if $verbose;
-  my $rows = $dbh->selectall_arrayref(<<SQL);
-select sha, id, ordering, branch from git_commits
-SQL
-  for my $row (@$rows) {
-    my ($sha, $id, $ordering, $branch) = @$row;
-    $entries{$sha} = [ $id, $ordering, $branch ];
+  my $ex = $gc->search({}, { columns => [ qw(sha id ordering branch) ] });
+
+  while (my $row = $ex->next) {
+    $entries{$row->sha} = [ $row->id, $row->ordering, $row->branch ];
   }
 }
 
 my %current_branches;
 {
-  my $rows = $dbh->selectall_arrayref(<<SQL);
-select branch, max(ordering)
-from git_commits
-group by branch
-SQL
-  for my $row (@$rows) {
-    $current_branches{$row->[0]} = $row->[1];
-  }
+    my $cb = $gc->search({},
+        {
+	    group_by => "branch",
+	    select => [
+		"branch",
+		{ max => "ordering", -as => "max_ordering" }
+	    ],
+	});
+    while (my $row = $cb->next) {
+	$current_branches{$row->branch} = $row->get_column("max_ordering");
+    }
 }
 
 my @branches = grep /^\s*remotes\/origin\//, `git branch -a`;
@@ -111,11 +114,16 @@ BRANCH: for my $branch (@queue) {
       my $tmp = decode("utf-8", $subject);
       $tmp and $subject = $tmp;
 
-      $dbh->do(<<SQL, undef, $branch, $order, $parentid, $sha, $subject);
-insert into git_commits(branch, ordering, parent_id, sha, subject)
-                 values(?,      ?,        ?,         ?,   ?      )
-SQL
-      $parentid = $dbh->{mysql_insertid};
+      my %row =
+	  (
+	   branch => $branch,
+	   ordering => $order,
+	   parent_id => $parentid,
+	   sha => $sha,
+	   subject => $subject,
+	  );
+      my $c = $gc->create(\%row);
+      $parentid = $c->id;
       $entries{$sha} = [ $parentid, $order ];
       ++$added;
     }
@@ -123,16 +131,13 @@ SQL
   $verbose and print "$added records added\n";
 }
 
-my @current = @{$dbh->selectall_arrayref(<<SQL, { Slice => {} })};
-select * from git_branches
-SQL
-my %current_name = map { $_->{name} => 1 } @current;
+my @current = $gb->get_column("name")->all;
+my %current_name = map { $_ => 1 } @current;
 
 for my $branch (@queue) {
   unless ($current_name{$branch}) {
-    $verbose and print "New branch $branch\n";
-    $dbh->do(<<SQL, {}, $branch);
-insert into git_branches(name) values(?)
-SQL
+      $verbose and print "New branch $branch\n";
+      $gb->create({ name => $branch });
+      $current_name{$branch} = 1;
   }
 }
