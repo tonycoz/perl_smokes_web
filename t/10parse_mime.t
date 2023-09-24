@@ -18,7 +18,7 @@ use SmokeReports::ParseMIME;
     is($p->{cpu_count}, 1, "cpu_count");
     is($p->{cpu_full}, "i86pc (2067MHz) (i386/1 cpu)", "cpu_full");
     is($p->{host}, "cjg-omniosce", "host");
-    is($p->{compiler}, "gcc version 7.4.0", "compiler");
+    is($p->{compiler}, "gcc 7.4.0", "compiler");
     is($p->{configuration}, undef, "configuration");
 }
 
