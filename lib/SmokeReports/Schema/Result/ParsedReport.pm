@@ -12,9 +12,22 @@ __PACKAGE__->add_columns
     data_type => "integer",
    },
    qw/sha subject status os cpu cpu_count cpu_full/,
-   qw/host compiler body nntp_id from_email error/,
+   qw/host compiler body/,
+   nntp_id => {
+       data_type => "integer",
+       default => undef,
+   },
+   qw/from_email error/,
    qw/when_at configuration branch duration/,
-   qw/smokedb_id logurl msg_id uuid need_update/);
+   smokedb_id => {
+       data_type => "integer",
+       default => undef,
+   },
+   qw/logurl msg_id uuid/,
+   need_update => {
+       data_type => "integer",
+       default => 0,
+   });
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });

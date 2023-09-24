@@ -15,6 +15,13 @@ __PACKAGE__->add_columns
     );
 __PACKAGE__->set_primary_key("id");
 
+__PACKAGE__->might_have
+  (
+   parsed_report => 'SmokeReports::Schema::Result::ParsedReport',
+   { "foreign.smokedb_id" => "self.report_id" },
+   { join_type => "LEFT OUTER" }
+  );
+
 # horribly hacky adaption from Perl5::CoreSmokeDB::Schema::Result::Report
 
 my %io_env_order_map = (

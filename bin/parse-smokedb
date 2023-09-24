@@ -7,125 +7,67 @@ use POSIX qw(strftime);
 my $verbose;
 GetOptions("v|verbose" => \$verbose);
 use SmokeReports::Dbh;
+use SmokeReports::ParseSmokeDB qw(parse_smoke_report);
 
 ++$|;
 
-my $dbh = SmokeReports::Dbh->dbh;
+my $schema = SmokeReports::Dbh->schema;
+my $p5s = $schema->resultset("Perl5Smoke");
+my $pr = $schema->resultset("ParsedReport");
 
+my $query = $p5s->search
+    (
+     { 'parsed_report.smokedb_id' => undef },
+     {
+	 join => 'parsed_report',
+	 order_by => "report_id",
+     },
+    );
 my $total_count;
 if ($verbose) {
-  ($total_count) = $dbh->selectrow_array(<<SQL) or die $dbh->errstr;
-select count(*)
-from perl5_smokedb s left join parsed_reports p on s.report_id = p.smokedb_id
-where p.smokedb_id is null
-SQL
-  print "$total_count reports to process\n";
+    $total_count = $query->count;
+    print "$total_count reports to process\n";
 }
 
-my @insert_cols = qw(sha subject status os cpu cpu_count cpu_full host compiler body from_email error when_at configuration branch duration smokedb_id uuid);
-
-my $inssql = 'insert into parsed_reports(' . join(',', @insert_cols) . 
-   ') values (' . join(',', ("?") x @insert_cols) . ')';
-
-my $inssth = $dbh->prepare($inssql)
-  or die "preparing inssql: ", $dbh->errstr;
+my @insert_cols = $pr->insert_columns;
 
 my $done_count = 0;
 my $json = JSON->new->utf8;
-while (my @reports = _get_reports($dbh)) {
-  if ($verbose) {
-    print "$done_count / $total_count\r";
-  }
-  for my $report (@reports) {
-    #print $report->{report_id}, "\n";
-    my %result =
-      (
-       ( map { $_ => '' } @insert_cols ),
-       smokedb_id => $report->{report_id},
-       cpu_count => 0,
-       branch => undef,
-      );
-    my $parsed;
-    if (eval { $parsed = $json->decode($report->{raw_report}); 1 }) {
-      unless (eval { process_report(\%result, $parsed, $report->{fetched_at}); 1 }) {
-	$result{error} = $@;
-      }
-    }
-    else {
-      $result{error} = "Could not parse json: " . $@;
+while (my $report = $query->next) {
+    if ($verbose) {
+	print "$done_count / $total_count\r";
     }
 
-    $inssth->execute(@result{@insert_cols})
-	or die "Cannot execute $inssql ($report->{report_id}): ", $inssth->errstr;
-  }
-  $done_count += @reports;
+    #print $report->{report_id}, "\n";
+    my %result =
+	(
+	 #( map { $_ => '' } @insert_cols ),
+	 error => '',
+	 smokedb_id => $report->report_id,
+	 cpu_count => 0,
+	 branch => undef,
+	);
+    my $parsed;
+    if (eval { $parsed = $json->decode($report->raw_report); 1 }) {
+	unless (eval { process_report(\%result, $parsed, $report->fetched_at); 1 }) {
+	    $result{error} = $@;
+	}
+    }
+    else {
+	$result{error} = "Could not parse json: " . $@;
+    }
+
+    my %ins;
+    @ins{@insert_cols} = @result{@insert_cols};
+    $pr->create(\%ins);
+
+    ++$done_count;
 }
 
 sub process_report {
   my ($result, $report, $fetched_at) = @_;
 
-  $result->{sha} = $report->{git_id};
-
-  $result->{status} = $report->{summary};
-  $result->{os} = "$report->{osname} $report->{osversion}";
-  $result->{cpu} = $report->{architecture};
-  $result->{cpu_count} = $report->{cpu_count};
-  $result->{cpu_count} =~ /^[1-9][0-9]*$/ or $result->{cpu_count} = 0;
-  $result->{cpu_full} = $report->{cpu_description};
-  $result->{host} = $report->{hostname};
-  my $cfg0 = $report->{configs}[0];
-  $result->{compiler} = "$cfg0->{cc} $cfg0->{ccversion}";
-  $result->{body} = "";
-  my $from = $report->{reporter};
-  if ($from && $from =~ /([a-z0-9.-]+\@[a-z0-9-.]+)/i) {
-    $from = $1;
-  }
-  $result->{from_email} = $from || 'unknown';
+  parse_smoke_report($result, $report);
 
   $result->{when_at} = strftime "%Y-%m-%d %H:%M:%S", gmtime $fetched_at;
-  $result->{duration} = $report->{duration};
-
-  if ($report->{user_note}) {
-    my %notes;
-    for my $entry (grep /:/, split /\n/, $report->{user_note}) {
-      my ($key, $val) = split /:\s*/, $entry, 2;
-      $notes{$key} = $val;
-    }
-
-    $result->{configuration} = $notes{Config};
-    $result->{branch} = $notes{Branch};
-    $result->{uuid} = $notes{UUID};
-  }
-
-  # lie
-  $result->{subject} = "Smoke [unknown] $report->{summary} $report->{osname} $report->{osversion} ($report->{architecture}/$report->{cpu_count} cpu)";
-}
-
-sub _get_reports {
-  my $dbh = shift;
-
-  my $id_rows = $dbh->selectall_arrayref(<<SQL);
-select report_id
-from perl5_smokedb s left join parsed_reports p on s.report_id = p.smokedb_id
-where p.smokedb_id is null
-limit 50
-SQL
-
-  my $sth = $dbh->prepare(<<SQL);
-select report_id, raw_report, fetched_at
-from perl5_smokedb
-where report_id = ?
-SQL
-
-  my @out_rows;
-  for my $row (@$id_rows) {
-    $sth->execute($row->[0])
-      or die "Fetching report id $row->[0]: ", $sth->errstr;
-    my $out_row = $sth->fetchrow_hashref
-      or die "No row found for id $row->[0]";
-    push @out_rows, $out_row;
-    $sth->finish;
-  }
-
-  return @out_rows;
 }
