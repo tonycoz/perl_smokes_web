@@ -17,7 +17,10 @@ sub parse_report_to_db($report, $verbose) {
 
 sub parsed_report_to_db($parsed, $verbose) {
     my $rs = SmokeReports::Dbh->schema->resultset("ParsedReport");
-    $rs->create($parsed);
+    my @insert_cols = $rs->insert_columns;
+    my %insert;
+    @insert{@insert_cols} = @$parsed{@insert_cols};
+    $rs->create(\%insert);
 }
 
 sub parse_new_reports_to_db($verbose) {
@@ -56,14 +59,19 @@ sub update_report_to_db($nntp_report, $parsed_report, $verbose) {
     if ($result->{error} && $verbose) {
 	print "Error ", $nntp_report->nntp_num, ": $result->{error}\n";
     }
-    $parsed_report->update($result);
+    my $schema = SmokeReports::Dbh->schema;
+    my $pr = $schema->resultset('ParsedReport');
+    my @update_cols = $pr->update_columns;
+    my %update;
+    @update{@update_cols} = @$result{@update_cols};
+    $parsed_report->update(\%update);
 }
 
 sub parse_updates_to_db($verbose) {
     my $schema = SmokeReports::Dbh->schema;
     my $dbr = $schema->resultset('DailyBuildReport');
     my $pr = $schema->resultset('ParsedReport');
-    
+
     my $query = $pr->search(
 	{
 	    need_update => { '!=', 0 },
