@@ -166,14 +166,7 @@ sub _process_report($result, $report_data) {
   $result->{osname} = $1;
   $result->{osversion} = $2;
   my $os1 = "$1 $2";
-  unless ($os1 eq $result->{os}) {
-    die <<DIE;
-OS parsed from subject doesn't match OS line:
-OS line: $os_line
-From OS line: "$os1"
-From subject: "$result->{os}"
-DIE
-  }
+  $result->{os} = $os1; # more reliable than subject
 
   my @cc;
   while (@body && $body[0] =~ /^\s+using\s+(\S(?:.*\S)?)\s+version(.*)/) {
