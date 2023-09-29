@@ -38,6 +38,7 @@ sub startup ($self) {
     $r->get('/dbreportjson/<id:num>')->to("site#dbreportjson");
     $r->get('/dblog/<id:num>')->to("site#dblog");
     $r->get('/dblogtext/<id:num>')->to("site#dblogtext");
+    $r->get('/unparsed/groups/')->to("site#unparsed_groups");
     $r->get('/unparsed/')->to("site#unparsed");
     $r->get('/api/reports_from_id/<id:num>')->to("api#reports_from_id");
     $r->get('/api/report_data/<id:num>')->to("api#report_data");

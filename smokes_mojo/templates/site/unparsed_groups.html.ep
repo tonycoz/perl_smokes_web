@@ -1,0 +1,18 @@
+% layout 'default';
+% title 'Unparsable report groups';
+
+<p>This is intended mostly for troubleshooting.</p>
+<p>There are some old reports that aren't parsable because they aren't really reports.</p>
+
+<table id="unparsed">
+  <tr>
+    <th>Count</th>
+    <th>Prefix</th>
+  </tr>
+% for my $group (@$groups) {
+  <tr>
+    <td><%= $group->get_column("count") %></a></td>
+    <td><%= $group->get_column("prefix") %></td>
+  </tr>
+% }
+</table>

@@ -383,4 +383,22 @@ sub unparsed ($self) {
 		  pages => \@pages);
 }
 
+sub unparsed_groups ($self) {
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("ParsedReport");
+    my $groups = $prs->search
+	(
+	 {
+	     error => { '!=', '' },
+	 },
+	 {
+	     order_by => "1 desc",
+	     group_by => [ \("substr(error, 1, 60)") ],
+	 select => [ { count => 'me.id' }, \'substr(error, 1, 60)' ],
+as => [ qw/count prefix / ],
+	 }
+	 );
+     $self->render(groups => [ $groups->all ]);
+}
+
 1;
