@@ -53,7 +53,6 @@ sub parse_new_reports_to_db($verbose) {
 
 sub update_report_to_db($nntp_report, $parsed_report, $verbose) {
     my $result = parse_report($nntp_report->raw_report, $verbose);
-    $result->{need_update} = 0;
     if ($result->{error} && $verbose) {
 	print "Error ", $nntp_report->nntp_num, ": $result->{error}\n";
     }
@@ -62,6 +61,7 @@ sub update_report_to_db($nntp_report, $parsed_report, $verbose) {
     my @update_cols = $pr->update_columns;
     my %update;
     @update{@update_cols} = @$result{@update_cols};
+    $update{need_update} = 0;
     $parsed_report->update(\%update);
 }
 
