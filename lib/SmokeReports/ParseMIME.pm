@@ -4,6 +4,7 @@ use Exporter qw(import);
 use MIME::Parser;
 use DateTime::Format::Mail;
 use SmokeReports::Sensible;
+use Digest::SHA qw(sha256_base64);
 
 our $VERSION = "1.001";
 
@@ -302,9 +303,10 @@ $ccmsgs
 $nfmsgs
 EOS
 
-  #print "$result->{by_config_full}\n\n====\n$result->{by_build_full}\n";
+  $result->{config_hash} = sha256_base64($result->{by_config_full});
+  $result->{build_hash} = sha256_base64($result->{by_build_full});
 
-  # For my old customized reports
+  #print "$result->{by_config_full}\n\n====\n$result->{by_build_full}\n";
 
   return 1;
 }
