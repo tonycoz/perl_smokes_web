@@ -3,6 +3,7 @@ use strict;
 use Exporter qw(import);
 use MIME::Parser;
 use DateTime::Format::Mail;
+use SmokeReports::Sensible;
 
 our $VERSION = "1.001";
 
@@ -25,8 +26,7 @@ my $parser;
     }
 }
 
-sub parse_report {
-    my ($report_data, $verbose) = @_;
+sub parse_report($report_data, $verbose) {
 
     my %result =
       (
@@ -58,9 +58,7 @@ sub parse_report {
     \%result;
 }
 
-sub _process_report {
-  my ($result, $report_data) = @_;
-
+sub _process_report($result, $report_data) {
   my $entity = _parser()->parse_data($report_data);
   my $head = $entity->head;
   my $bh = $entity->bodyhandle;
@@ -122,7 +120,9 @@ sub _process_report {
   defined $cores or $cores = 1;
   $result->{cpu_count} = $cpu_count * $cores;
 
+  @body = map {; $_ // "" } @body;
   chomp @body;
+  tr/\r//d for @body;
   pop @body while @body && $body[-1] !~ /\S/;
   # George Greer links the reports at the front
   if (@body && $body[0] =~ /\bSmoke logs available at (\S+)$/) {
@@ -135,7 +135,7 @@ sub _process_report {
   @body
     or die "No report prologue found in body\n";
 
-  if ($body[0] =~ /^(\s+)?/) {
+  if ($body[0] =~ /^(\s+)/) {
     # some old rocket software reports have a space before each line
     my $leading = $1;
     s/^$leading// for @body;
@@ -151,12 +151,29 @@ sub _process_report {
   while (@body && $body[0] !~ /^([a-z.0-9-]+):\s*(.*)/i) {
     shift @body;
   }
-  my $host_line = shift @body;
-  my $os_line = shift @body;
+  my $host_line = shift @body
+    or die "No host line\n";
+
   my ($host, $cpu_full) = $host_line =~ /^([a-z.0-9-]+):\s*(.*)/i
-    or die "Cannot parse host line: $host_line\n";
+    or die "Cannot parse host line:\n$host_line\n";
   $result->{host} = $host;
   $result->{cpu_full} = $cpu_full;
+
+  my $os_line = shift @body
+    or die "No os line\n";
+  $os_line =~ /^\s+on\s+(.*?) - (.*)/
+    or die "Cannot parse os line\n$os_line\n";
+  $result->{osname} = $1;
+  $result->{osversion} = $2;
+  my $os1 = "$1 $2";
+  unless ($os1 eq $result->{os}) {
+    die <<DIE;
+OS parsed from subject doesn't match OS line:
+OS line: $os_line
+From OS line: "$os1"
+From subject: "$result->{os}"
+DIE
+  }
 
   my @cc;
   while (@body && $body[0] =~ /^\s+using\s+(\S(?:.*\S)?)\s+version(.*)/) {
@@ -171,8 +188,9 @@ sub _process_report {
   }
   unless (@cc) {
     # some reports don't have the " version " so guess
-    if (@body && $body[0] =~ /^(.*?) ([a-z]\d\.\d+.*)/i) {
+    if (@body && $body[0] =~ /^\s+using\s+(.*?) ([a-z]\d\.\d+.*)/i) {
       push @cc, { cc => $1, version => $2, index => 1 };
+      shift @body;
     }
   }
   unless (@cc) {
@@ -181,28 +199,125 @@ sub _process_report {
   }
   $result->{compiler} = "$cc[0]{cc} $cc[0]{version}";
 
-  my ($day, $hour, $minute) = ( 0, 0 );
+  # some old openvms reports have a blank line before the smoketime
+  # like 220979
+  while (@body && $body[0] !~ /\S/) {
+    shift @body;
+  }
+  my ($day, $hour, $minute) = ( 0, 0, 0 );
   if (@body && $body[0] =~ /^\s+smoketime
-                            (?:\s+(\d+) days?)?
-			    (?:\s+(\d+) hours?)?
-			    (?:\s+(\d+) minutes?)?\s*$
-			   /x) {
+                            (?:\s+(\d+)\ days?)?
+			    (?:\s+(\d+)\ hours?)?
+			    (?:\s+(\d+)\ minutes?)?
+			   /x) { # ignore any seconds
     ($day, $hour, $minute) = ( $1, $2, $3 );
     $day    ||= 0;
     $hour   ||= 0;
     $minute ||= 0;
     shift @body;
   }
+  else {
+    die "Could not parse smoketime\n", _escape($body[0]), "\n";
+  }
   $result->{duration} = $day * 86_400 + $hour * 3600 + $minute * 60;
 
-  if (@body && $body[-1] =~ /^Configuration: (\w+)$/) {
-    $result->{configuration} = $1;
+  # look for the summary
+  while (@body && $body[0] !~ /^Summary:/) {
+      shift @body;
   }
-  if (@body > 1 && $body[-2] =~ /^Branch: ([\w\/-]+)$/) {
-    $result->{branch} = $1;
+  if (@body) {
+    $body[0] =~ /^Summary:\s+(.*)$/
+      or die "Summary line not parsable\n$body[0]\n";
+    unless ($result->{status} eq $1) {
+      my $summ_esc = _escape($1);
+      my $subj_esc = _escape($result->{status});
+
+      die <<DIE;
+Status from summary line doesn't match subject:
+'$summ_esc' vs '$subj_esc'
+$body[0]
+$subject
+DIE
+    }
+    shift @body;
   }
 
+  my $conf_re = qr/^.*\s+Configuration\s+\(common\)\s*(.*)/;
+  while (@body && $body[0] !~ $conf_re) {
+    shift @body;
+  }
+  @body && $body[0] =~ $conf_re
+    or die "No 'Configuration' line found\n";
+  my $common = $1 // "";
+  $common eq "none" and $common = "";
+  $common =~/\S/ and $common .= " ";
+  shift @body;
+  @body && $body[0] =~ /^\s*-+\s+-+$/
+    or die "No build matrix header found\n";
+  shift @body;
+  my @conf1;
+  while (@body && $body[0] =~ /^(?:[OFX?-cmMt]\s+)+(.*)$/) {
+    push @conf1, "$common$1";
+    shift @body;
+  }
+  my @conf2;
+  while (@body && $body[0] =~ /^(?:\|\s+)*\+-+\s+(.*)/) {
+    my $conf = $1;
+    $conf eq "no debugging" and $conf = "";
+    push @conf2, $conf;
+    shift @body;
+  }
+
+  $result->{compiler_msgs} = [];
+  $result->{nonfatal_msgs} = [];
+  while (@body) {
+    my $line = shift @body;
+    if ($line =~ /^Compiler messages\(.*\):$/) {
+      my @ccmsgs;
+      while (@body && $body[0] =~ /\S/) {
+	push @ccmsgs, shift @body;
+      }
+      $result->{compiler_msgs} = \@ccmsgs;
+    }
+    elsif ($line =~ /^non-fatal messages\(.*\):$/i) {
+      my @nfmsgs;
+      while (@body && $body[0] =~ /\S/) {
+	push @nfmsgs, shift @body;
+      }
+      $result->{nonfatal_msgs} = \@nfmsgs;
+    }
+    elsif ($line =~ /^Configuration: (\w+)$/) {
+      $result->{configuration} = $1;
+    }
+    elsif ($line =~ /^Branch: ([\w\/-]+)$/) {
+      $result->{branch} = $1;
+    }
+  }
+
+  $result->{by_config_full} = join "",
+    "$host\n$os\n", 
+    map("$_\n", @conf1), "--\n", map("$_\n", @conf2);
+
+  my $ccmsgs = join "\n", $result->{compiler_msgs}->@*;
+  my $nfmsgs = join "\n", $result->{nonfatal_msgs}->@*;
+  $result->{by_build_full} = <<EOS;
+$result->{by_config_full}--
+$result->{duration}
+--
+$ccmsgs
+--
+$nfmsgs
+EOS
+
+  #print "$result->{by_config_full}\n\n====\n$result->{by_build_full}\n";
+
+  # For my old customized reports
+
   return 1;
+}
+
+sub _escape($s) {
+  $s =~ s/([^[:print:]])/ sprintf("\\x{%x}", ord $1) /ger;
 }
 
 1;
