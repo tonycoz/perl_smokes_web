@@ -41,9 +41,7 @@ sub parse_new_reports_to_db($verbose) {
     }
 
     my $done_count = 0;
-    $schema->storage->debug(1);
     while (my $report = $query->next) {
-    $schema->storage->debug(0);
 	parse_report_to_db($report, $verbose);
 	++$done_count;
 	if ($verbose) {
