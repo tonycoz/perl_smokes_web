@@ -106,7 +106,7 @@ sub reparse_ids_to_db($verbose, $ids) {
     my $pr = $schema->resultset('ParsedReport');
     for my $id (@$ids) {
         my $nntp = $dbr->find({ nntp_num => $id })
-	  or die "Cannot find NNTP report $id\n";
+	  or die "Cannot find parsed NNTP report $id\n";
 	my $parsed = $pr->find({ nntp_id => $id });
 	update_report_to_db($nntp, $parsed, $verbose);
     }

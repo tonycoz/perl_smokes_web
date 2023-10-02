@@ -5,6 +5,7 @@ use MIME::Parser;
 use DateTime::Format::Mail;
 use SmokeReports::Sensible;
 use Digest::SHA qw(sha256_base64);
+use SmokeReports::ParseUtil 'canonify_config_opts';
 
 our $VERSION = "1.001";
 
@@ -251,9 +252,10 @@ DIE
   shift @body;
   my @conf1;
   while (@body && $body[0] =~ /^(?:[OFX?-cmMt]\s+)+(.*)$/) {
-    push @conf1, "$common$1";
+    push @conf1, canonify_config_opts("$common$1");
     shift @body;
   }
+  s/\s+$// for @conf1;
   my @conf2;
   while (@body && $body[0] =~ /^(?:\|\s+)*\+-+\s+(.*)/) {
     my $conf = $1;
@@ -289,19 +291,23 @@ DIE
   }
 
   $result->{by_config_full} = join "",
-    "$host\n$os\n", 
-    map("$_\n", @conf1), "--\n", map("$_\n", @conf2);
+    "$result->{host}\n$result->{os}\n", 
+    map("$_\n", @conf1);
+  # Test::Smoke is really inconsistent on whether it shows the perlio/stdio
+  # in the matrix in the NNTP report
+  #, "--\n", map("$_\n", @conf2);
 
   my $ccmsgs = join "\n", $result->{compiler_msgs}->@*;
   my $nfmsgs = join "\n", $result->{nonfatal_msgs}->@*;
   $result->{by_build_full} = <<EOS;
 $result->{by_config_full}--
 $result->{duration}
---
-$ccmsgs
---
-$nfmsgs
 EOS
+# --  George Greer's NNTP messages omit errors
+# $ccmsgs
+# --
+# $nfmsgs
+# EOS
 
   $result->{config_hash} = sha256_base64($result->{by_config_full});
   $result->{build_hash} = sha256_base64($result->{by_build_full});

@@ -33,6 +33,8 @@ __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });
 __PACKAGE__->belongs_to('nntp', 'SmokeReports::Schema::Result::DailyBuildReport',
 			{ 'foreign.nntp_num' => 'self.nntp_id' });
+__PACKAGE__->belongs_to('smokedb', 'SmokeReports::Schema::Result::Perl5Smoke',
+			{ 'foreign.report_id' => 'self.smokedb_id' });
 
 sub from ($self) {
     my $from = $self->from_email;
@@ -70,6 +72,14 @@ sub more_logurl ($self, $config) {
     $id or return '';
     -f "$base/$id.gz" or return '';
     return "/dblog/$id";
+}
+
+sub insert_columns($self) {
+    grep !/^(?:id|need_update)$/, $self->columns;
+}
+
+sub update_columns($self) {
+    grep !/^(?:nntp_id|smokedb_id)$/, $self->insert_columns;
 }
 
 1;

@@ -4,11 +4,11 @@ use SmokeReports::Sensible;
 use parent 'DBIx::Class::ResultSet';
 
 sub insert_columns($self) {
-    grep !/^(?:id|need_update)$/, $self->result_source->columns;
+    $self->result_class->insert_columns;
 }
 
 sub update_columns($self) {
-    grep !/^(?:nntp_id|smokedb_id)$/, $self->insert_columns;
+    $self->result_class->update_columns;
 }
 
 1;
