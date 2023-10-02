@@ -1,9 +1,8 @@
 package SmokeReports::ParseSmokeDB;
 use SmokeReports::Sensible;
-use Digest::SHA qw(sha256_base64);
 use Exporter qw(import);
 use JSON;
-use SmokeReports::ParseUtil 'canonify_config_opts';
+use SmokeReports::ParseUtil qw(canonify_config_opts fill_correlations);
 
 my $json_parser = JSON->new->utf8;
 
@@ -90,23 +89,9 @@ sub do_parse_smoke_report ($result, $report) {
     ++$index;
   }
   my @conf1 = sort { $conf1{$a} <=> $conf1{$b} } keys %conf1;
+  $result->{conf1} = \@conf1;
 
-  $result->{by_config_full} = join "",
-    "$result->{host}\n$result->{os}\n",
-    map("$_\n", @conf1);
-
-  my $dur_m = int($result->{duration} / 60) * 60;
-  $result->{by_build_full} = <<EOS;
-$result->{by_config_full}--
-$dur_m
-EOS
-#--  # George Greer's NNPT reports omit errors
-#$report->{compiler_msgs}
-#--
-#$report->{nonfatal_msgs}
-
-  $result->{config_hash} = sha256_base64($result->{by_config_full});
-  $result->{build_hash} = sha256_base64($result->{by_build_full});
+  fill_correlations($result);
 
   1;
 }

@@ -4,8 +4,7 @@ use Exporter qw(import);
 use MIME::Parser;
 use DateTime::Format::Mail;
 use SmokeReports::Sensible;
-use Digest::SHA qw(sha256_base64);
-use SmokeReports::ParseUtil 'canonify_config_opts';
+use SmokeReports::ParseUtil qw(canonify_config_opts fill_correlations);
 
 our $VERSION = "1.001";
 
@@ -263,6 +262,7 @@ DIE
     push @conf2, $conf;
     shift @body;
   }
+  $result->{conf1} = \@conf1;
 
   $result->{compiler_msgs} = [];
   $result->{nonfatal_msgs} = [];
@@ -290,29 +290,8 @@ DIE
     }
   }
 
-  $result->{by_config_full} = join "",
-    "$result->{host}\n$result->{os}\n", 
-    map("$_\n", @conf1);
-  # Test::Smoke is really inconsistent on whether it shows the perlio/stdio
-  # in the matrix in the NNTP report
-  #, "--\n", map("$_\n", @conf2);
+  fill_correlations($result);
 
-  my $ccmsgs = join "\n", $result->{compiler_msgs}->@*;
-  my $nfmsgs = join "\n", $result->{nonfatal_msgs}->@*;
-  $result->{by_build_full} = <<EOS;
-$result->{by_config_full}--
-$result->{duration}
-EOS
-# --  George Greer's NNTP messages omit errors
-# $ccmsgs
-# --
-# $nfmsgs
-# EOS
-
-  $result->{config_hash} = sha256_base64($result->{by_config_full});
-  $result->{build_hash} = sha256_base64($result->{by_build_full});
-
-  #print "$result->{by_config_full}\n\n====\n$result->{by_build_full}\n";
 
   return 1;
 }

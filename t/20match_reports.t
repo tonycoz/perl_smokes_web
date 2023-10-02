@@ -47,9 +47,37 @@ ok($p5s, "get Perl5Smoke");
 }
 {
     
-    my @nomatch =
-	(
+    my @build_nomatch =
+	( # nntpid smokeid name
+	  [ 296975, 5040249, "simple arch linux" ],
+	  [ 296949, 5040181, "failing on fedora" ],
+	  [ 296943, 5040157, "ubuntu success" ],
+	  [ 296937, 5040125, "fedora success sanitize" ],
+	  [ 296941, 5040126, "fedora success quick" ],
 	);
+    # config should match but not build
+    for my $match (@build_nomatch) {
+	my ($nntp_id, $report_id, $name) = @$match;
+
+	my $nntp = $dbr->find({ nntp_num => $nntp_id});
+	my $smoke = $p5s->find({ report_id => $report_id });
+	ok($nntp, "$name: got nntp $nntp_id");
+	ok($smoke, "$name: got smoke $report_id");
+	my $nntp_parsed = parse_report($nntp->raw_report, 0);
+	my $smoke_parsed = parse_smoke_report($smoke->raw_report, 0);
+	is($nntp_parsed->{error}, "", "$name: no error parsing nntp");
+	is($smoke_parsed->{error}, "", "$name: no error parsing smoke");
+	is($nntp_parsed->{by_config_full}, $smoke_parsed->{by_config_full},
+	   "$name: configs match")
+	    or diag_compare($nntp_parsed->{by_config_full},
+			    $smoke_parsed->{by_config_full});
+	isnt($nntp_parsed->{by_build_full}, $smoke_parsed->{by_build_full},
+	   "$name: builds don't match");
+	is($nntp_parsed->{config_hash}, $smoke_parsed->{config_hash},
+	   "$name: config hashes match");
+	isnt($nntp_parsed->{build_hash}, $smoke_parsed->{build_hash},
+	     "$name: build hashes don't match");
+    }
 }
 done_testing();
 
