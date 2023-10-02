@@ -65,7 +65,7 @@ sub index ($self) {
 	    parent_id => $commit->parent_id,
 	    smokes => [
 		$prs->search({sha => $commit->sha},
-			     { order_by => [ "os", "host", "id" ] })
+			     { order_by => [ "os", "host", "compiler", "id" ] })
 		],
 	};
     }
