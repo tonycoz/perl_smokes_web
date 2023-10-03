@@ -75,8 +75,8 @@ sub parse_update_smokedb_to_db ($verbose) {
     my $query = $pr->search
 	(
 	 {
-	     need_update => [ '!=' => 0 ],
-	     smokedb_id => [ '!=' => undef ],
+	     need_update => { '!=' => 0 },
+	     smokedb_id => { '!=' => undef },
 	 },
 	 { order_by => \'smokedb_id desc' }
 	);
@@ -89,7 +89,9 @@ sub parse_update_smokedb_to_db ($verbose) {
     my @insert_cols = $pr->insert_columns;
 
     my $done_count = 0;
+    #$schema->storage->debug(1);
     while (my $parsed = $query->next) {
+      #$schema->storage->debug(1);
 	if ($verbose) {
 	    print "$done_count / $total_count\r";
 	}
