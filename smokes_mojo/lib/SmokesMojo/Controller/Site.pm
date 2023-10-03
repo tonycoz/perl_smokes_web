@@ -75,14 +75,20 @@ sub index ($self) {
 	return $self->index;
     }
     for my $commit (@commits) {
+	my %seen_builds;
 	for my $smoke ($commit->{smokes}->@*) {
 	    my %s = (
 		$smoke->get_columns,
 		map { $_ => $smoke->$_ }
 		qw(from original_url report_url)
 		);
+	    ++$seen_builds{$s{build_hash}} if $s{smokedb_id};
 	    $s{logurl} = $smoke->more_logurl($self->app->config);
 	    $smoke = \%s;
+	}
+	for my $smoke ($commit->{smokes}->@*) {
+	    $smoke->{is_duplicate} =
+		$smoke->{nntp_id} && exists $seen_builds{$smoke->{build_hash}};
 	}
     }
 

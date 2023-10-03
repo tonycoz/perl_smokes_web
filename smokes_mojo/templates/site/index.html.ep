@@ -19,7 +19,20 @@ Branch:<div class="autocomplete">
 <p>There's more than one sequence of commits recorded for this branch</p>
 % }
 <form id="filters" action="">
-<table id="commits">
+  <div><input type=checkbox id=showduplicates> Show duplicate emailed reports</div>
+  <script>
+    document.getElementById("showduplicates").addEventListener("change",
+    (ev) => {
+      let commits = document.getElementById("commits");
+	if (ev.target.checked) {
+	    commits.classList.remove("hideduplicates");
+	}
+	else {
+	    commits.classList.add("hideduplicates");
+	}
+      });
+    </script>
+<table id="commits" class="hideduplicates">
   <tr class="filters">
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
     <td><input type="text" id="os" size="8" placeholder="filter os"/></td>
@@ -44,8 +57,9 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
   </tr>
 %   for my $smoke ($commit->{smokes}->@*) {
 %     my $status = $smoke->{status};  
-%     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
-  <tr class="smoke <%= $class %>" id="report<%= $smoke->{id} %>">
+%     my @class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+%     push @class, "duplicate" if $smoke->{is_duplicate};
+  <tr class="smoke <%= join " ", @class %>" id="report<%= $smoke->{id} %>" data-build-hash="<%= $smoke->{build_hash} %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
     <td class="status"><%= $status %></td>
 	<td><%= $smoke->{os} %></td>
 	<td><%= $smoke->{cpu} %></td>

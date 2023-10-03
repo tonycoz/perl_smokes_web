@@ -57,7 +57,8 @@ td, th {
     background-color: #CFC;
 }
 
-#commits tr.smoke:nth-child(even) {
+#commits.hideduplicates tr.smoke:nth-child(even of :not([class*="duplicate"])),
+#commits:not([class*="hideduplicates"]) tr.smoke:nth-child(even) {
     background-color: #EEE;
 }
 
@@ -65,6 +66,9 @@ td, th {
     background-color: #CCC;
 }
 
+#commits.hideduplicates tr.duplicate {
+    display: none;
+}
 
 #commits tr.hide {
     display: none;
