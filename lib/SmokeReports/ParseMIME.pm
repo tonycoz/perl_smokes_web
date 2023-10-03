@@ -48,6 +48,8 @@ sub parse_report($report_data, $verbose) {
        branch => undef,
        duration => 0,
        msg_id => undef,
+       build_hash => '',
+       config_hash => '',
       );
     eval {
       _process_report(\%result, $report_data);

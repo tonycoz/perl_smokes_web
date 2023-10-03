@@ -27,7 +27,8 @@ __PACKAGE__->add_columns
    need_update => {
        data_type => "integer",
        default => 0,
-   });
+   },
+   qw(config_hash build_hash));
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });

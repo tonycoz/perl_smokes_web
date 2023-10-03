@@ -84,9 +84,7 @@ sub parse_updates_to_db($verbose) {
     }
 
     my $done_count = 0;
-    $schema->storage->debug(1);
     while (my $parsed = $query->next) {
-	$schema->storage->debug(0);
 	my $nntp = $parsed->nntp;
 	if ($nntp) {
 	    update_report_to_db($nntp, $parsed, $verbose);

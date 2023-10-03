@@ -27,6 +27,8 @@ sub parse_smoke_report ($report, $verbose) {
        branch => undef,
        duration => 0,
        msg_id => undef,
+       build_hash => '',
+       config_hash => '',
     );
 
   my $pjson;
