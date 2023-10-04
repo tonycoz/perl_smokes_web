@@ -2,6 +2,20 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>3 October 2023</h3>
+
+<p>This isn't live yet.</p>
+
+<ul>
+  <li>Significant re-works of NNTP and smokedb report parsing, these now
+    (try) to generate keys that identify a build between NNTP and smokedb
+    reports.  This also attempts to identify a build configuration as well,
+    for future use.</li>
+  <li>Make the index only show smokedb reports as well as the NNTP reports
+    that don't have a corresponding smokedb report.  There's a checkbox to
+    display all reports (which isn't saved)</li>
+</ul>
+
 <h3>30 August 2023</h3>
 
 <ul>
