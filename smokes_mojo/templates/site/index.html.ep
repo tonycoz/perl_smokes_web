@@ -19,7 +19,7 @@ Branch:<div class="autocomplete">
 <p>There's more than one sequence of commits recorded for this branch</p>
 % }
 <form id="filters" action="">
-  <div><input type=checkbox id=showduplicates> Show duplicate emailed reports</div>
+  <div><input type=checkbox id=showduplicates> <label for="showduplicates">Show duplicate emailed reports</label></div>
   <script>
     document.getElementById("showduplicates").addEventListener("change",
     (ev) => {
