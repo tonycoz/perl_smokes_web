@@ -71,7 +71,7 @@ sub index ($self) {
     }
     if (!@commits) {
 	$self->param(b => "blead");
-	$self->stash(message => qq(Unknown branch "$branch"));
+	$self->stash(message => qq(Branch "$branch" has no unique commits));
 	return $self->index;
     }
     for my $commit (@commits) {
