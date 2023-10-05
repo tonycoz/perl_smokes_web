@@ -2,6 +2,36 @@ package SmokesMojo::Controller::Site;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
 
+sub _branches ($self, $current) {
+    my $schema = $self->app->schema;
+    my $branches = $schema->storage->dbh_do
+	(
+	 sub {
+	     my ($storage, $dbh) = @_;
+	     $dbh->selectcol_arrayref(<<'SQL')
+select distinct b.name
+from git_branches b
+order by
+  (select max(seen_at)
+   from git_commits c
+   where c.branch = b.name) desc
+SQL
+	 }
+	);
+    # we want blead and latest maint at the top, and then the
+    # selected branch if it's neither of those
+    my @last_maint = (sort grep /^maint-5.[0-9]{2}$/, @$branches)[-1, -2];
+    my @branches = ( "blead", @last_maint );
+    my %bseen = map { $_ => 1 } @branches;
+    unless ($bseen{$current}) {
+	push @branches, $current;
+	++$bseen{$current};
+    }
+    push @branches, grep !$bseen{$_}, @$branches;
+
+    \@branches;
+}
+
 sub index ($self) {
     my $branch = $self->param("b");
     my $start = $self->param("s");
@@ -122,37 +152,14 @@ sub index ($self) {
 	my $parent = $commits{$commit->{parent_id}};
 	$commit->{parent_sha} = $parent ? $parent->{sha} : "";
     }
-    
-    my $branches = $schema->storage->dbh_do
-	(
-	 sub {
-	     my ($storage, $dbh) = @_;
-	     $dbh->selectcol_arrayref(<<'SQL')
-select distinct b.name
-from git_branches b
-order by
-  (select max(seen_at)
-   from git_commits c
-   where c.branch = b.name) desc
-SQL
-	 }
-	);
-    # we want blead and latest maint at the top, and then the
-    # selected branch if it's neither of those
-    my @last_maint = (sort grep /^maint-5.[0-9]{2}$/, @$branches)[-1, -2];
-    my @branches = ( "blead", @last_maint );
-    my %bseen = map { $_ => 1 } @branches;
-    unless ($bseen{$branch}) {
-	push @branches, $branch;
-	++$bseen{$branch};
-    }
-    push @branches, grep !$bseen{$_}, @$branches;
+
+    my $branches = $self->_branches($branch);
 
     $self->render(commits => \@commits,
 		  groups => \@groups,
 		  branch => $branch,
 	          message => $self->stash("message"),
-		  branches => \@branches,
+		  branches => $branches,
 		  start => $start,
 		  page => $page,
 		  more_pages => (@commits == 50),
