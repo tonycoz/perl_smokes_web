@@ -62,7 +62,10 @@ td, th {
     background-color: #EEE;
 }
 
-#commits tr.smoke:hover {
+/* there's probably a better way to do this */
+#commits tr.smoke:hover,
+#commits.hideduplicates tr.smoke:hover:nth-child(even of :not([class*="duplicate"])),
+#commits:not([class*="hideduplicates"]) tr.smoke:hover:nth-child(even) {
     background-color: #CCC;
 }
 
