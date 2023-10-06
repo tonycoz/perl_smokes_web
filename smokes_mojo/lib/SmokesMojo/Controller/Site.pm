@@ -32,12 +32,7 @@ SQL
     \@branches;
 }
 
-sub index ($self) {
-    my $branch = $self->param("b");
-    my $start = $self->param("s");
-    my $page = $self->param("page");
-    defined $page && $page =~ /^[1-9][0-9]*$/ or $page = 1;
-    defined $branch or $branch = "blead";
+sub _commits ($self, $branch, $start, $page) {
     my $schema = $self->app->schema;
     my $crs = $schema->resultset("GitCommit");
     my $gbrs = $schema->resultset("GitBranch");
@@ -63,14 +58,14 @@ sub index ($self) {
 		$self->param(b => "blead");
 		$self->param(s => undef);
 		$self->stash(message => qq("$start" branch not found));
-		return $self->index;
+		return;
 	    }
 	}
 	else {
 	    $self->param(b => "blead");
 	    $self->param(s => undef);
 	    $self->stash(message => qq(Unknown commit "$start"));
-	    return $self->index;
+	    return;
 	}
     }
     else {
@@ -153,16 +148,31 @@ sub index ($self) {
 	$commit->{parent_sha} = $parent ? $parent->{sha} : "";
     }
 
+    return (\@commits, \@groups);
+}
+
+sub index ($self) {
+    my $branch = $self->param("b");
+    my $start = $self->param("s");
+    my $page = $self->param("page");
+    defined $page && $page =~ /^[1-9][0-9]*$/ or $page = 1;
+    defined $branch or $branch = "blead";
+
+    my ($commits, $groups) =
+	$self->_commits($branch, $start, $page);
+    $commits
+	or return $self->index;
+
     my $branches = $self->_branches($branch);
 
-    $self->render(commits => \@commits,
-		  groups => \@groups,
+    $self->render(commits => $commits,
+		  groups => $groups,
 		  branch => $branch,
 	          message => $self->stash("message"),
 		  branches => $branches,
 		  start => $start,
 		  page => $page,
-		  more_pages => (@commits == 50),
+		  more_pages => (@$commits == 50),
 	);
 }
 
