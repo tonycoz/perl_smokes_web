@@ -85,7 +85,6 @@ sub _process_report($result, $report_data) {
       die "No body text found\n";
     }
   }
-  $result->{body} = join '', @body;
 
   $head->unfold;
   my $subject = $entity->get("Subject");

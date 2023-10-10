@@ -12,7 +12,7 @@ __PACKAGE__->add_columns
     data_type => "integer",
    },
    qw/sha subject status os cpu cpu_count cpu_full/,
-   qw/host compiler body/,
+   qw/host compiler/,
    nntp_id => {
        data_type => "integer",
        default => undef,

@@ -55,7 +55,6 @@ sub do_parse_smoke_report ($result, $report) {
   $result->{host} = $report->{hostname};
   my $cfg0 = $report->{configs}[0];
   $result->{compiler} = "$cfg0->{cc} $cfg0->{ccversion}";
-  $result->{body} = "";
   my $from = $report->{reporter};
   if ($from && $from =~ /([a-z0-9.-]+\@[a-z0-9-.]+)/i) {
     $from = $1;
