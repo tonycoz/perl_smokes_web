@@ -2,6 +2,10 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>13 October 2023</h3>
+
+<p>Changes below now live.</p>
+
 <h3>3 October 2023</h3>
 
 <p>This isn't live yet.</p>
@@ -14,6 +18,7 @@
   <li>Make the index only show smokedb reports as well as the NNTP reports
     that don't have a corresponding smokedb report.  There's a checkbox to
     display all reports (which isn't saved)</li>
+  <li>Prevent mojibake for commit descriptions in the index</li>
 </ul>
 
 <h3>30 August 2023</h3>
