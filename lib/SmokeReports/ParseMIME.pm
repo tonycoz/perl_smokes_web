@@ -104,7 +104,8 @@ sub _process_report($result, $report_data) {
       $date_parsed = $date_parser->parse_datetime($date);
       $date_parsed->set_time_zone("UTC");
     };
-    $result->{when_at} = "$date_parsed";
+    $date_parsed = "$date_parsed" if $date_parsed;
+    $result->{when_at} = $date_parsed;
   }
 
   $result->{msg_id} = $entity->get('Message-Id')
