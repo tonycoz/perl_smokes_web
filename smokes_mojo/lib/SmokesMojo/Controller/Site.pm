@@ -97,7 +97,7 @@ sub _commits ($self, $branch, $start, $page) {
     if (!@commits) {
 	$self->param(b => "blead");
 	$self->stash(message => qq(Branch "$branch" has no unique commits));
-	return $self->index;
+	return;
     }
     for my $commit (@commits) {
 	my %seen_builds;
