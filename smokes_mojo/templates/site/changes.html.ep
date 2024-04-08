@@ -2,6 +2,15 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>8 April 2024</h3>
+
+<ul>
+  <li>Fix mishandling of unknown branches on the index page.  This
+    would eventually produce a timeout message.</li>
+  <li>prevent wrapping of the links column</li>
+  <li>add links to the parsed report data to the report pages</li>
+</ul>
+
 <h3>13 October 2023</h3>
 
 <p>Changes below now live.</p>
