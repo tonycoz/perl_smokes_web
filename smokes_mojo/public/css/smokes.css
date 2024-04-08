@@ -151,8 +151,13 @@ menu li.right {
   background-color: #CFC;
 }
 
-.links {
+td.links {
     font-size: 14px;
+    white-space: nowrap;
+}
+
+tr.config td {
+    font-size: 90%;
 }
 
 .links a:hover {
