@@ -12,7 +12,7 @@ WriteMakefile
     'MIME::Parser' => 0,
     'DateTime::Format::Mail' => 0,
     'Cpanel::JSON::XS' => 0,
-    perl => 5.32,
+    perl => v5.32,
    },
    test => {TESTS => 't/*.t'},
 );
