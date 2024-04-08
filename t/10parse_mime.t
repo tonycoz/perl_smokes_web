@@ -20,6 +20,19 @@ use SmokeReports::ParseMIME;
     is($p->{host}, "cjg-omniosce", "host");
     is($p->{compiler}, "gcc 7.4.0", "compiler");
     is($p->{configuration}, undef, "configuration");
+    is_deeply($p->{conf1_struct},
+	      {
+	       common => [ "-Dcc=gcc" ],
+	       extra => [
+			 [ ],
+			 [ "-Duse64bitall" ],
+			 [ "-Duselongdouble" ],
+			 [ "-Duseithreads" ],
+			 [ "-Duse64bitall", "-Duseithreads" ],
+			 [ "-Duseithreads", "-Duselongdouble" ],
+			 ]
+	      }, "conf1_struct")
+      or do { use Data::Dumper; diag(Dumper($p->{conf1_struct})) };
 }
 
 done_testing();

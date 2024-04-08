@@ -103,7 +103,7 @@ sub _commits ($self, $branch, $start, $page) {
 	my %seen_builds;
 	for my $smoke ($commit->{smokes}->@*) {
 	    my %s = (
-		$smoke->get_columns,
+		$smoke->get_inflated_columns,
 		map { $_ => $smoke->$_ }
 		qw(from original_url report_url)
 		);

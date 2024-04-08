@@ -2,6 +2,8 @@ package SmokeReports::Schema::Result::ParsedReport;
 use v5.32.0;
 use parent qw/DBIx::Class::Core/;
 use SmokeReports::Sensible;
+#__PACKAGE__->load_components(qw( FilterColumn ));
+__PACKAGE__->load_components('InflateColumn::Serializer', 'Core');
 
 __PACKAGE__->table('parsed_reports');
 __PACKAGE__->add_columns
@@ -28,7 +30,10 @@ __PACKAGE__->add_columns
        data_type => "integer",
        default => 0,
    },
-   qw(config_hash build_hash));
+   qw(config_hash build_hash),
+   conf1_struct => {
+       serializer_class => "JSON",
+   });
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });
@@ -36,6 +41,19 @@ __PACKAGE__->belongs_to('nntp', 'SmokeReports::Schema::Result::DailyBuildReport'
 			{ 'foreign.nntp_num' => 'self.nntp_id' });
 __PACKAGE__->belongs_to('smokedb', 'SmokeReports::Schema::Result::Perl5Smoke',
 			{ 'foreign.report_id' => 'self.smokedb_id' });
+
+# inflate column complained:
+# DBIx::Class::SQLMaker::ClassicExtensions::puke(): Fatal: Operator calls in update must be in the form { -op => $arg }
+# __PACKAGE__->filter_column(
+#     conf1_struct => {
+# 	filter_to_storage => sub {
+# 	    print STDERR "encoding\n";
+# 	    _json->encode($_[1]);
+# 	},
+# 	filter_from_storage => sub {
+# 	    eval { _json->decode($_[1]); } || undef;
+# 	},
+#     });
 
 sub from ($self) {
     my $from = $self->from_email;
@@ -81,6 +99,23 @@ sub insert_columns($self) {
 
 sub update_columns($self) {
     grep !/^(?:nntp_id|smokedb_id)$/, $self->insert_columns;
+}
+
+# I originally tried 
+#sub update($self, $cols) {
+#    if ($cols && $cols1->{conf1_struct}) {
+#	require Cpanel::JSON::XS;#
+#	my %cols = %$cols;
+#	$cols{conf1_
+#    }
+#}
+
+sub _json {
+    require Cpanel::JSON::XS;
+
+    state $json = Cpanel::JSON::XS->new->utf8;
+
+    $json;
 }
 
 1;

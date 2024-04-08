@@ -5,7 +5,7 @@ use SmokeReports::Sensible;
 use Text::ParseWords 'quotewords';
 use Digest::SHA qw(sha256_base64);
 
-our @EXPORT_OK = qw(canonify_config_opts fill_correlations);
+our @EXPORT_OK = qw(canonify_config_opts fill_common);
 
 sub canonify_config_opts ($opts) {
   # can't use shellwords() since we want to keep the quotes
@@ -15,7 +15,7 @@ sub canonify_config_opts ($opts) {
     quotewords(qr/\s+/, 1, $opts);
 }
 
-sub fill_correlations ($result) {
+sub fill_common ($result) {
   my $conf1 = join "", map("$_\n", $result->{conf1}->@*);
 
   my $conf_os = $result->{os};
@@ -38,6 +38,29 @@ $dur_m
 EOS
   $result->{config_hash} = sha256_base64($result->{by_config_full});
   $result->{build_hash} = sha256_base64($result->{by_build_full});
+
+  # configs
+  my %conf_counts;
+  for my $conf ($result->{conf1}->@*) {
+    # make sure we ignore duplicates
+    my %seen = map { $_ => 1 } quotewords(qr/\s+/, 1, $conf);
+    ++$conf_counts{$_} for keys %seen;
+  }
+
+  my @common = grep {; $conf_counts{$_} == $result->{conf1}->@* }
+    keys %conf_counts;
+  my %common = map { $_ => 1 } @common;
+  my @myconf1;
+  for my $conf ($result->{conf1}->@*) {
+    my @row = grep !$common{$_}, quotewords(qr/\s+/, 1, $conf);
+    push @myconf1, \@row;
+  }
+  my %conf1 =
+    (
+     common => \@common,
+     extra => \@myconf1,
+     );
+  $result->{conf1_struct} = \%conf1;
 }
 
 1;

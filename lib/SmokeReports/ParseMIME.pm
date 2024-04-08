@@ -4,7 +4,7 @@ use Exporter qw(import);
 use MIME::Parser;
 use DateTime::Format::Mail;
 use SmokeReports::Sensible;
-use SmokeReports::ParseUtil qw(canonify_config_opts fill_correlations);
+use SmokeReports::ParseUtil qw(canonify_config_opts fill_common);
 
 our $VERSION = "1.001";
 
@@ -50,6 +50,7 @@ sub parse_report($report_data, $verbose) {
        msg_id => undef,
        build_hash => '',
        config_hash => '',
+       conf1_struct => {},
       );
     eval {
       _process_report(\%result, $report_data);
@@ -103,7 +104,7 @@ sub _process_report($result, $report_data) {
       $date_parsed = $date_parser->parse_datetime($date);
       $date_parsed->set_time_zone("UTC");
     };
-    $result->{when_at} = $date_parsed;
+    $result->{when_at} = "$date_parsed";
   }
 
   $result->{msg_id} = $entity->get('Message-Id')
@@ -291,7 +292,7 @@ DIE
     }
   }
 
-  fill_correlations($result);
+  fill_common($result);
 
 
   return 1;

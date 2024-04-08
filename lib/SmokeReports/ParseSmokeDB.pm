@@ -2,7 +2,7 @@ package SmokeReports::ParseSmokeDB;
 use SmokeReports::Sensible;
 use Exporter qw(import);
 use JSON;
-use SmokeReports::ParseUtil qw(canonify_config_opts fill_correlations);
+use SmokeReports::ParseUtil qw(canonify_config_opts fill_common);
 
 my $json_parser = JSON->new->utf8;
 
@@ -29,6 +29,7 @@ sub parse_smoke_report ($report, $verbose) {
        msg_id => undef,
        build_hash => '',
        config_hash => '',
+       conf1_struct => {},
     );
 
   my $pjson;
@@ -92,7 +93,7 @@ sub do_parse_smoke_report ($result, $report) {
   my @conf1 = sort { $conf1{$a} <=> $conf1{$b} } keys %conf1;
   $result->{conf1} = \@conf1;
 
-  fill_correlations($result);
+  fill_common($result);
 
   1;
 }
