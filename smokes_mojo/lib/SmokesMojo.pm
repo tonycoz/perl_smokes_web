@@ -33,9 +33,11 @@ sub startup ($self) {
     $r->get('/recent/')->to("site#recent");
     $r->get('/changes/')->to("site#changes");
     $r->get('/raw/:id')->to("site#raw");
+    $r->get('/rawparsedjson/:id')->to("site#rawparsedjson");
     $r->get('/db/:id')->to("site#db");  
     $r->get('/dbjson/<id:num>')->to("site#dbjson");  
     $r->get('/dbreportjson/<id:num>')->to("site#dbreportjson");
+    $r->get('/dbparsedjson/<id:num>')->to("site#dbparsedjson");
     $r->get('/dblog/<id:num>')->to("site#dblog");
     $r->get('/dblogtext/<id:num>')->to("site#dblogtext");
     $r->get('/unparsed/groups/')->to("site#unparsed_groups");

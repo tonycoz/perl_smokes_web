@@ -1,6 +1,9 @@
 % layout 'default';
 % title 'Raw report '.$id;
 <h2><%= $pr->subject %></h2>
-<p class="links">[<a href="<%= $pr->original_url %>">via nntp.perl.org</a>]</p>
+<p class="links">
+[<a href="<%= $pr->original_url %>">via nntp.perl.org</a>]
+[<a href="/rawparsedjson/<%= $id %>" title="how we parsed the report, meant for debugging mostly">parsed detail</a>]
+</p>
 <pre><%= $raw %></pre>
 

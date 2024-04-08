@@ -1,6 +1,8 @@
 package SmokesMojo::Controller::Site;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
+use SmokeReports::ParseSmokeDB "parse_smoke_report";
+use SmokeReports::ParseMIME "parse_report";
 
 sub _branches ($self, $current) {
     my $schema = $self->app->schema;
@@ -264,6 +266,20 @@ sub raw ($self) {
     }
 }
 
+sub rawparsedjson ($self) {
+    my $nntp_id = $self->param("id");
+    my $schema = $self->app->schema;
+    my $dbrs = $schema->resultset("DailyBuildReport");
+    my $r = $dbrs->find({ nntp_num => $nntp_id });
+    unless ($r) {
+	$self->render(template => "does_not_exit");
+    }
+    my $parsed = parse_report($r->raw_report, 0);
+    require Cpanel::JSON::XS;
+    my $data = Cpanel::JSON::XS->new->utf8->canonical->encode($parsed);
+    $self->render(data => $data, format => "json");    
+}
+
 # display a formatted version of the stored smoke DB report
 sub db ($self) {
     my $report_id = $self->param("id");
@@ -324,7 +340,7 @@ sub dbreportjson ($self) {
 	$self->render(template => "does_not_exist");
     }
     require Cpanel::JSON::XS;
-    my $data = Cpanel::JSON::XS->new->utf8->encode($sr->full_report);
+    my $data = Cpanel::JSON::XS->new->utf8->canonical->encode($sr->full_report);
     $self->render(data => $data, format => "json");
 }
 
@@ -371,6 +387,24 @@ Let tonyc know about your old browser.
 He was lazy and only supported browsers with gzip support.
 TEXT
     }
+}
+
+sub dbparsedjson ($self) {
+    my $report_id = $self->param("id");
+    unless ($report_id =~ /\A[1-9][0-9]*\z/) {
+	$self->render(template => "does_not_exist");
+    }
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("Perl5Smoke");
+    my $sr = $prs->find({ report_id => $report_id });
+    unless ($sr) {
+	$self->render(template => "does_not_exist");
+    }
+
+    my $parsed = parse_smoke_report($sr->raw_report, 0);
+    require Cpanel::JSON::XS;
+    my $data = Cpanel::JSON::XS->new->utf8->canonical->encode($parsed);
+    $self->render(data => $data, format => "json");
 }
 
 sub changes ($self) {

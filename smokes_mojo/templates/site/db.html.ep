@@ -8,6 +8,7 @@
   [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
   [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
   [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
+  [<a href="/dbparsedjson/<%= $id %>" title="how we parsed the report, meant for debugging">parsed detail</a>]
 </p>
 % unless (defined $js->{log_file}) {
 <p>This report never had a log</p>
