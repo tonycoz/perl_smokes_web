@@ -1,9 +1,20 @@
 #!/usr/bin/perl
 use strict;
+use SmokeReports::Config;
 use SmokeReports::Dbh;
 
-chdir "/home/tony/dev/perl/git/perl"
-  or die "Cannot chdir";
+
+my $config = SmokeReports::Config->config;
+
+my $git_tree = $config->{commits}{git_tree}
+  or die "config 'commits.git_tree' not defined\n";
+-d $git_tree
+  or die "config 'commits.git_tree' '$git_tree' is not a directory\n";
+-d "$git_tree/.git"
+  or die "$git_tree is not a git directory\n";
+
+chdir $git_tree
+  or die "Cannot chdir '$git_tree': $!\n";
 
 system "git fetch -p -q >/dev/null 2>/dev/null";
 
@@ -30,4 +41,3 @@ for my $sha (@$shas) {
   }
   $sth->execute($summary, $sha);
 }
-
