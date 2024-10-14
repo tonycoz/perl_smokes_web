@@ -9,6 +9,7 @@
     }
   },
   "logpath":"/path/to/store/smokedb/log/contents",
+  "basenntp_url":"https://www.nntp.perl.org/group/perl.daily-build.reports/",
   "post_key":"key-used-in-posting-nntp-messages-received-via-mailing-list",
   "coresmokedb_url":"https://perl5.test-smoke.org/api/",
   "commits": {
