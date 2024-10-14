@@ -1,13 +1,13 @@
 {
   "secrets":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "db": {
-    "dsn":"dbi:mysql:databasename
+    "dsn":"dbi:mysql:databasename",
     "user":"database user",
     "password":"database password",
     "attr": {
         "mysql_enable_utf8":1
     }
-  }
+  },
   "logpath":"/path/to/store/smokedb/log/contents",
   "post_key":"key-used-in-posting-nntp-messages-received-via-mailing-list",
   "coresmokedb_url":"https://perl5.test-smoke.org/api/",
