@@ -9,7 +9,7 @@
     <menu>
       <li><a href="/">Reports by commit</a></li>
       <li><a href="/recent/">Recent reports</a></li>
-      <li><a href="https://test-smoke.org/">Perl5 CoreSmokeDB</a></li>
+      <li><a href="https://perl5.test-smoke.org/">Perl5 CoreSmokeDB</a></li>
       <li class="right"><a href="/changes/">Changes</a></li>
     </menu>
     <%= content %></body>
