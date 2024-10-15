@@ -12,5 +12,5 @@ Makefile
 */Makefile
 */Makefile.old
 smoke.cfg
-/SmokeReports
 /dblogs/
+*.sql

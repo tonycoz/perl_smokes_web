@@ -1,5 +1,5 @@
 #!perl -w
-use SmokeReports::Sensible;
+use Smokes::Helpers::Sensible;
 use Test::More;
 
 my @warn;

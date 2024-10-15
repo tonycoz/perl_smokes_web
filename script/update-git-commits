@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+use strict;
+use Smokes::Helpers::Config;
+use Smokes::Helpers::Dbh;
+
+
+my $config = Smokes::Helpers::Config->config;
+
+my $git_tree = $config->{commits}{git_tree}
+  or die "config 'commits.git_tree' not defined\n";
+-d $git_tree
+  or die "config 'commits.git_tree' '$git_tree' is not a directory\n";
+-d "$git_tree/.git"
+  or die "$git_tree is not a git directory\n";
+
+chdir $git_tree
+  or die "Cannot chdir '$git_tree': $!\n";
+
+system "git fetch -p -q >/dev/null 2>/dev/null";
+
+my $dbh = Smokes::Helpers::Dbh->dbh;
+
+my $shas = $dbh->selectcol_arrayref(<<SQL) or die "Cannot select";
+select distinct sha from smoke_reports where summary = ''
+SQL
+
+my $sth = $dbh->prepare(<<SQL) or die "prepare";
+update smoke_reports
+  set summary = ?
+where sha = ?
+SQL
+
+for my $sha (@$shas) {
+  my $summary;
+  if ($sha =~ /^[a-z0-9]+$/) {
+    $summary = `git log -n 1 --pretty='format:%an: %s' $sha 2>/dev/null`;
+    $? and $summary = "Error retrieving commit $sha";
+  }
+  else {
+    $summary = "Bad SHA";
+  }
+  $sth->execute($summary, $sha);
+}

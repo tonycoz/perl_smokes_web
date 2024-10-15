@@ -3,11 +3,11 @@ use strict;
 use warnings;
 use Test::More;
 use JSON;
-use SmokeReports::ParseMIME;
+use Smokes::Tooling::ParseMIME;
 
 {
     my $j = load_json("t/243680.json");
-    my $p = SmokeReports::ParseMIME::parse_report($j->{raw_report}, 0);
+    my $p = Smokes::Tooling::ParseMIME::parse_report($j->{raw_report}, 0);
     ok($p, "got some data");
     is($p->{msg_id}, $j->{msg_id}, "msg_id");
     is($p->{sha}, "d1d17ec1ca01d3c59b76a0bf8f9882b5a4b667f6", "sha");

@@ -1,11 +1,11 @@
 #!perl
-use SmokeReports::Sensible;
+use Smokes::Helpers::Sensible;
 use Test::More;
-use SmokeReports::Dbh;
-use SmokeReports::ParseMIME qw(parse_report);
-use SmokeReports::ParseSmokeDB qw(parse_smoke_report);
+use Smokes::Helpers::Dbh;
+use Smokes::Tooling::ParseMIME qw(parse_report);
+use Smokes::Tooling::ParseSmokeDB qw(parse_smoke_report);
 
-my $schema = SmokeReports::Dbh->schema;
+my $schema = Smokes::Helpers::Dbh->schema;
 my $dbr = $schema->resultset("DailyBuildReport");
 my $p5s = $schema->resultset("Perl5Smoke");
 

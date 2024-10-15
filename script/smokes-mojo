@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+use v5.32.0;
+
+use Mojolicious::Commands;
+
+# Start command line interface for application
+Mojolicious::Commands->start_app('Smokes::Mojo');

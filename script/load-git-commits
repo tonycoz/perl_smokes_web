@@ -1,0 +1,143 @@
+#!/usr/bin/perl
+use strict;
+use Encode;
+use Smokes::Helpers::Config;
+use Smokes::Helpers::Dbh;
+use Getopt::Long;
+use warnings;
+
+my $verbose;
+
+GetOptions("v:i" => \$verbose);
+
+my $config = Smokes::Helpers::Config->config;
+
+my $git_tree = $config->{commits}{git_tree}
+  or die "config 'commits.git_tree' not defined\n";
+-d $git_tree
+  or die "config 'commits.git_tree' '$git_tree' is not a directory\n";
+-d "$git_tree/.git"
+  or die "$git_tree is not a git directory\n";
+
+chdir $git_tree
+  or die "Cannot chdir '$git_tree': $!\n";
+
+my $schema = Smokes::Helpers::Dbh->schema;
+my $gc = $schema->resultset("GitCommit");
+my $gb = $schema->resultset("GitBranch");
+
+my %entries;
+
+{
+  print "loading existing\n" if $verbose;
+  my $ex = $gc->search({}, { columns => [ qw(sha id ordering branch) ] });
+
+  while (my $row = $ex->next) {
+    $entries{$row->sha} = [ $row->id, $row->ordering, $row->branch ];
+  }
+}
+
+my %current_branches;
+{
+    my $cb = $gc->search({},
+        {
+	    group_by => "branch",
+	    select => [
+		"branch",
+		{ max => "ordering", -as => "max_ordering" }
+	    ],
+	});
+    while (my $row = $cb->next) {
+	$current_branches{$row->branch} = $row->get_column("max_ordering");
+    }
+}
+
+my @branches = grep /^\s*remotes\/origin\//, `git branch -a`;
+chomp @branches;
+
+s/^\s*remotes\/// for @branches;
+s(^origin/)() for @branches;
+
+@branches = grep /\A[a-zA-Z_\/0-9.+!-]+\z/, @branches;
+
+my %branches = map { $_ => 1 } @branches;
+
+my @queue = "blead";
+
+delete @branches{@queue, "HEAD"};
+
+push @queue, grep /^maint-5\.[0-9]+$/, sort keys %branches;
+push @queue, grep m(^smoke-me/), sort keys %branches;
+
+$verbose and print "queue: @queue\n";
+
+BRANCH: for my $branch (@queue) {
+  $verbose and print "$branch: ";
+
+  my ($first) = `git log -n 1 --pretty="%H" origin/$branch`;
+  chomp $first;
+
+  if ($entries{$first}) {
+    $verbose and print "seen HEAD\n";
+    next BRANCH;
+  }
+
+  my @changes = `git log --pretty="%H %an: %s" origin/$branch`;
+  chomp @changes;
+
+  my $parentid = 0;
+  my $order = $current_branches{$branch} || 0;
+  $verbose and print " order $order ";
+  my $added = 0;
+
+  my @work;
+  # look for a sha we've seen
+  UNSEEN: for my $change (@changes) {
+    my ($sha, $subject) = split / /, $change, 2;
+    $subject = substr($subject, 0, 250) . "..."
+	if length($subject) > 254;
+    push @work, [ $sha, $subject ];
+
+    $entries{$sha} and last UNSEEN;
+  }
+
+  for my $change (reverse @work) {
+    my ($sha, $subject) = @$change;
+
+    my $entry = $entries{$sha};
+
+    if ($entry) {
+      ($parentid, $order) = @$entry;
+    }
+    else {
+      ++$order;
+      my $tmp = decode("utf-8", $subject);
+      $tmp and $subject = $tmp;
+
+      my %row =
+	  (
+	   branch => $branch,
+	   ordering => $order,
+	   parent_id => $parentid,
+	   sha => $sha,
+	   subject => $subject,
+	  );
+      my $c = $gc->create(\%row);
+      $parentid = $c->id;
+      $entries{$sha} = [ $parentid, $order ];
+      ++$added;
+    }
+  }
+  $verbose and print "$added records added\n";
+}
+
+my @current = $gb->get_column("name")->all;
+my %current_name = map { $_ => 1 } @current;
+
+for my $branch (@queue) {
+  unless ($current_name{$branch}) {
+      $verbose and print "New branch $branch\n";
+      $gb->create({ name => $branch });
+      $current_name{$branch} = 1;
+  }
+}
