@@ -1,6 +1,6 @@
 % layout 'default';
-% title 'Recently downloaded reports';
-<h2>Recently downloaded reports</h2>
+% title 'Latest report per host';
+<h2>Latest report per host</h2>
 <form id="filters" action="">
 <table id="commits">
   <tr class="filters">
@@ -8,6 +8,7 @@
     <td></td>
     <td></td>
     <td><input type="text" id="os" size="8" placeholder="filter os"/></td>
+    <td><input type="text" id="host" size="8" placeholder="filter host"/></td>
     <td><input type="text" id="arch" size="5" placeholder="filter arch" /></td>
     <td><input type="text" id="cc" size="10" placeholder="filter compiler" /></td>
     <td><input type="text" id="from" size="10" placeholder="filter from" /></td>
@@ -23,8 +24,9 @@
     <td><a href="/?b=<%= $branch %>"><%= $branch %></a></td>
     <td><a title="<%= $smoke->{subject} %>" href="https://github.com/Perl/perl5/commit/<%= $smoke->{sha} %>"><%= substr($smoke->{sha}, 0, 10) %></a></td>
     <td><%= $smoke->{os} %></td>
+    <td><%= $smoke->{host} %></td>
     <td><%= $smoke->{cpu} %></td>
-    <td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></td>
+    <td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></span></td>
     <td><%= $smoke->{from} %></td>
     <td class="when_at"><%= $smoke->{age} %></td>
     <td class="links">
@@ -39,4 +41,4 @@
 %   }
 </table>
 </form>
-<script type="text/javascript" src="/js/recent.js"></script>
+<script type="text/javascript" src="/js/latest.js"></script>

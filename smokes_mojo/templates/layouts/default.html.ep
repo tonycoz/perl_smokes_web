@@ -4,11 +4,22 @@
     <title><%= title %></title>
     <link rel="stylesheet" type="text/css" media="screen" href="/css/smokes.css" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="shortcut icon" href="/images/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
   </head>
   <body>
+    <div id="banner">
+      <a href="/"><img src="/images/smokin-perl.png"/></a>
+    </div>
     <menu>
       <li><a href="/">Reports by commit</a></li>
       <li><a href="/recent/">Recent reports</a></li>
+      <li><a href="/latest/">Latest per host</a></li>
+      <li><a href="/matrix/">Matrix</a></li>
       <li><a href="https://perl5.test-smoke.org/">Perl5 CoreSmokeDB</a></li>
       <li class="right"><a href="/changes/">Changes</a></li>
     </menu>

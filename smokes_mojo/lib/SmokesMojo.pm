@@ -30,7 +30,10 @@ sub startup ($self) {
 
     # Normal route to controller
     $r->get('/')->to('site#index');
+    $r->get('/latest/')->to("site#latest");
     $r->get('/recent/')->to("site#recent");
+    $r->get('/matrix/')->to("site#matrix");
+    $r->get('/submatrix/')->to("site#submatrix");
     $r->get('/changes/')->to("site#changes");
     $r->get('/raw/:id')->to("site#raw");
     $r->get('/rawparsedjson/:id')->to("site#rawparsedjson");

@@ -1,0 +1,27 @@
+% layout 'default';
+% title 'Failing tests';
+<h2>Failing tests submatrix</h2>
+
+<table id="commits">
+  <thead>
+    <tr>
+      <th>Test</th>
+      <th>Version</th>
+      <th>Git</th>
+      <th>Report</th>
+      <th>OS</th>
+    </tr>
+  </thead>
+  <tbody>
+%   for my $smoke ($smokes->@*) {
+    <tr>
+      <td><a href="https://github.com/Perl/perl5/tree/<%= $smoke->{git_sha} %>/42/<%= $smoke->{test} %>"><%= $smoke->{test} %></a></td>
+      <!-- AHA: rework the test name instead of 42 xD -->
+      <td><%= $smoke->{perl_id} %></td>
+      <td><a href="https://github.com/Perl/perl5/commit/<%= $smoke->{git_sha} %>"><%= $smoke->{git_sha} %></a></td>
+      <td><a href="/db/<%= $smoke->{report_id} %>"><%= $smoke->{report_id} %></a></td>
+      <td><%= $smoke->{os_version} %></td>
+    </tr>
+% }
+  </tbody>
+</table>

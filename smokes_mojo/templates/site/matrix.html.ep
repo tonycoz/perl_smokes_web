@@ -1,0 +1,28 @@
+% layout 'default';
+% title 'Failing tests';
+<h2>Failing tests matrix</h2>
+
+<table id="commits">
+  <thead>
+    <tr>
+      <th>Test</th>
+      <th><%= $p1 %></th>
+      <th><%= $p2 %></th>
+      <th><%= $p3 %></th>
+      <th><%= $p4 %></th>
+      <th><%= $p5 %></th>
+    </tr>
+  </thead>
+  <tbody>
+%   for my $test ($tests->@*) {
+    <tr class="smoke">
+      <td><a href="/submatrix?test=<%= $test->[0] %>"><%= $test->[0] %></a></td>
+      <td><a href="/submatrix?test=<%= $test->[0] %>&pversion=<%= $p1 %>"><%= $test->[1]{cnt} %></a></td>
+      <td><a href="/submatrix?test=<%= $test->[0] %>&pversion=<%= $p2 %>"><%= $test->[2]{cnt} %></a></td>
+      <td><a href="/submatrix?test=<%= $test->[0] %>&pversion=<%= $p3 %>"><%= $test->[3]{cnt} %></a></td>
+      <td><a href="/submatrix?test=<%= $test->[0] %>&pversion=<%= $p4 %>"><%= $test->[4]{cnt} %></a></td>
+      <td><a href="/submatrix?test=<%= $test->[0] %>&pversion=<%= $p5 %>"><%= $test->[5]{cnt} %></a></td>
+    </tr>
+% }
+  </tbody>
+</table>

@@ -1,4 +1,11 @@
-
+#banner {
+    height            : 150px;
+    padding-left      : 150px;
+    padding-top	      : 30px;
+    background        : #000;
+    background-image  : url("/images/smoke.gif"); /* fallback */
+    background-repeat : no-repeat;
+}
 
 body, th, td {
     font-size: 12px;

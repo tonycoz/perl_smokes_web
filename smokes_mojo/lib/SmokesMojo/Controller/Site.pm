@@ -3,6 +3,8 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
 use SmokeReports::ParseSmokeDB "parse_smoke_report";
 use SmokeReports::ParseMIME "parse_report";
+use LWP::UserAgent;
+use Mojo::JSON qw(decode_json encode_json);
 
 sub _branches ($self, $current) {
     my $schema = $self->app->schema;
@@ -177,6 +179,87 @@ sub index ($self) {
 		  more_pages => (@$commits == 50),
 	);
 }
+
+sub matrix ($self) {
+    my $ua = LWP::UserAgent->new;
+    my $req = HTTP::Request->new(GET => "http://perl5.test-smoke.org/api/matrix");
+    my $res = $ua->request($req);
+
+    if ($res->is_success) {
+        my $tests = decode_json($res->content);
+	my ($ignore, $p1, $p2, $p3, $p4, $p5) = $tests->[0]->@*;
+	shift $tests->@*;
+        $self->render(p1 => $p1, p2 => $p2, p3 => $p3, p4 => $p4, p5 => $p5, tests => $tests);
+    }
+}
+
+sub submatrix($self) {
+    my $test = $self->param("test");
+    my $pversion = $self->param("pversion");
+
+    my $ua = LWP::UserAgent->new;
+    my $req = HTTP::Request->new(GET => "http://perl5.test-smoke.org/api/submatrix?test=$test&pversion=$pversion"); # TODO: Sanitize
+    my $res = $ua->request($req);
+
+    if ($res->is_success) {
+        my $smokes = decode_json($res->content);
+	$self->render(smokes => $smokes->{reports});
+    }
+}
+
+sub latest ($self) {
+    # Same than recent with group_by
+    my $page = $self->param("page");
+    defined $page && $page =~ /^[1-9][0-9]*$/
+	or $page = 1;
+
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("ParsedReport");
+    my $smokes = $prs->search
+	({
+	    
+	 },
+	 {
+	     columns =>
+		 [
+		  qw(id status os cpu cpu_count cpu_full host
+		     compiler from_email),
+#		  #{ "age" => \  },
+		  qw(msg_id configuration sha
+		     smokedb_id nntp_id logurl),
+		 ],
+	     '+select' =>
+		 [
+		  \ "timediff(now(), when_at)",
+		  "commit.branch",
+		  "commit.subject",
+		 ],
+	     '+as' => [
+		 "age",
+		 "branch",
+		 "subject",
+		 ],
+	     join => 'commit',
+	     rows => 100,
+	     page => $page,
+	     group_by => [ qw(host) ],
+	     order_by => { -desc => "when_at" },
+	 });
+    my @smokes = $smokes->all;
+    for my $smoke (@smokes) {
+	my %temp = (
+	    $smoke->get_columns,
+	    map { $_ => $smoke->$_ }
+	    qw(from original_url report_url)
+	    );
+	$temp{logurl} = $smoke->more_logurl($self->app->config);
+	$smoke = \%temp;
+    }
+    $self->render(page => $page,
+                  smokes => \@smokes);
+}
+
+
 
 sub recent ($self) {
     my $page = $self->param("page");
