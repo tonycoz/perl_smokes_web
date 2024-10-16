@@ -15,7 +15,10 @@
     <td>Filter: <span title="Each filter is a JS regular expression possibly with ! before it to invert the selection">?</span></td>
    <td><input type="reset" value="Clear Filter"></td>
   </tr>
+%   my %seen = ();
 %   for my $smoke ($smokes->@*) {
+%     next if( $seen{$smoke->{host}});
+%     $seen{$smoke->{host}} = "seen";
 %     my $status = $smoke->{status};  
 %     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
   <tr class="smoke <%= $class %>">

@@ -187,9 +187,11 @@ sub matrix ($self) {
 
     if ($res->is_success) {
         my $tests = decode_json($res->content);
-	my ($ignore, $p1, $p2, $p3, $p4, $p5) = $tests->[0]->@*;
+	# First line contains empty cell then versions (table headers)
+	my ($ignore, @versions) = $tests->[0]->@*;
+	# Then test name with failure count
 	shift $tests->@*;
-        $self->render(p1 => $p1, p2 => $p2, p3 => $p3, p4 => $p4, p5 => $p5, tests => $tests);
+        $self->render(versions => \@versions, tests => $tests);
     }
 }
 
@@ -207,8 +209,7 @@ sub submatrix($self) {
     }
 }
 
-sub latest ($self) {
-    # Same than recent with group_by
+sub recent_smokes($self) {
     my $page = $self->param("page");
     defined $page && $page =~ /^[1-9][0-9]*$/
 	or $page = 1;
@@ -242,7 +243,6 @@ sub latest ($self) {
 	     join => 'commit',
 	     rows => 100,
 	     page => $page,
-	     group_by => [ qw(host) ],
 	     order_by => { -desc => "when_at" },
 	 });
     my @smokes = $smokes->all;
@@ -255,60 +255,17 @@ sub latest ($self) {
 	$temp{logurl} = $smoke->more_logurl($self->app->config);
 	$smoke = \%temp;
     }
-    $self->render(page => $page,
-                  smokes => \@smokes);
+    return ($page, \@smokes);
 }
 
-
-
 sub recent ($self) {
-    my $page = $self->param("page");
-    defined $page && $page =~ /^[1-9][0-9]*$/
-	or $page = 1;
+	my ($page, $smokes) = recent_smokes($self);
+        $self->render(page => $page, smokes => $smokes);
+}
 
-    my $schema = $self->app->schema;
-    my $prs = $schema->resultset("ParsedReport");
-    my $smokes = $prs->search
-	({
-	    
-	 },
-	 {
-	     columns =>
-		 [
-		  qw(id status os cpu cpu_count cpu_full host
-		     compiler from_email),
-#		  #{ "age" => \  },
-		  qw(msg_id configuration sha
-		     smokedb_id nntp_id logurl),
-		 ],
-	     '+select' =>
-		 [
-		  \ "timediff(now(), when_at)",
-		  "commit.branch",
-		  "commit.subject",
-		 ],
-	     '+as' => [
-		 "age",
-		 "branch",
-		 "subject",
-		 ],
-	     join => 'commit',
-	     rows => 100,
-	     page => $page,
-	     order_by => { -desc => "when_at" },
-	 });
-    my @smokes = $smokes->all;
-    for my $smoke (@smokes) {
-	my %temp = (
-	    $smoke->get_columns,
-	    map { $_ => $smoke->$_ }
-	    qw(from original_url report_url)
-	    );
-	$temp{logurl} = $smoke->more_logurl($self->app->config);
-	$smoke = \%temp;
-    }
-    $self->render(page => $page,
-                  smokes => \@smokes);
+sub latest ($self) {
+	my ($page, $smokes) = recent_smokes($self);
+        $self->render(page => $page, smokes => $smokes);
 }
 
 # display the stored NNTP/mail report
