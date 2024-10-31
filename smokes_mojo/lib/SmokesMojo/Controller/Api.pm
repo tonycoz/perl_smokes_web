@@ -98,9 +98,13 @@ sub post_coresmokedb_report ($self) {
 
     my $json = Cpanel::JSON::XS->new->utf8;
     my $report_data = $json->decode($req->body);
-    $report_data = { %{ delete $report_data->{'sysinfo'} } };
-    $report_data = { %{ delete $report_data->{'config'} } };
+    $report_data->{$_} = $report_data->{'sysinfo'}{$_} for keys %{ $report_data->{'sysinfo'} };
+    $report_data->{$_} = $report_data->{'config'}{$_} for keys %{ $report_data->{'config'} };
+    delete $report_data->{'sysinfo'};
+    delete $report_data->{'config'};
+
     $report_data->{lc($_)} = delete $report_data->{$_} for keys %$report_data;
+
     $report_data->{smoke_date} = "" . DateTime->from_epoch(
         epoch     => str2time($report_data->{smoke_date}),
         time_zone => 'UTC',
@@ -116,8 +120,6 @@ sub post_coresmokedb_report ($self) {
     $report_data->{$_} = delete $report_data->{$_} for @other_data;
 
     my $configs = delete $report_data->{'configs'};
-
-    $report_data->{summary} = "FAILED";
 
     my $raw = $json->encode($report_data);
 
