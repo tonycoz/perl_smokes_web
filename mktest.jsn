@@ -1,0 +1,78 @@
+{
+   "locale" : "",
+   "manifest_msgs" : [],
+   "out_file" : null,
+   "skip_tests" : "/home/tib/smoke/Test-Smoke/bin/smokecurrent.skiptests",
+   "summary" : "FAILED",
+   "un_position" : "bottom",
+   "v" : "2",
+   "hostname" : "tib-local-again",
+   "applied_patches" : [
+      "SMOKE9a9d70c38f6051857c395092b58e79353ce9f3be"
+   ],
+   "compiler_msgs" : [],
+   "sysinfo" : {
+      "git_id" : "19a540392dc1dea55a673834a3c690d1dd5dee6a",
+      "config_count" : 1,
+      "hostname" : "tib-local-again",
+      "cpu_description" : "11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz (GenuineIntel 2000MHz)",
+      "test_jobs" : null,
+      "smoke_date" : "2024-10-25 11:02:19 +0200",
+      "perl_id" : "5.41.6",
+      "architecture" : "x86_64",
+      "cpu_count" : "1[8 cores]",
+      "cpu": "abcd",
+      "username" : "tibo",
+      "git_describe" : "v5.41.5-21-g9a9d70c38f",
+      "osname" : "linux",
+      "duration" : 1163,
+      "smoke_perl" : "5.38.2",
+      "smoke_branch" : "blead",
+      "lc_all" : null,
+      "reporter" : "",
+      "smoker_version" : "0.047",
+      "smoke_version" : "1.82",
+      "lang" : "en_US.UTF-8",
+      "reporter_version" : "0.054",
+      "osversion" : "6.8.0-45-generic [Ubuntu 24.04.1 LTS (noble)]",
+      "user_note" : "",
+      "smoke_revision" : "1.82"
+   },
+   "un_file" : "/home/tib/smoke/Test-Smoke/bin/smokecurrent.usernote",
+   "perlio_only" : 1,
+   "rptfile" : "mktest.rpt",
+   "log_file" : null,
+   "cfg" : "/home/tib/smoke/Test-Smoke/bin/smokecurrent.buildcfg",
+   "configs" : [
+      {
+         "ccversion" : "13.2.0",
+         "cc" : "cc",
+         "debugging" : "N",
+         "arguments" : "",
+         "results" : [
+            {
+               "failures" : [],
+               "stat_tests" : "1189816",
+               "stat_cpu_time" : "649.62",
+               "statistics" : "Files=2888, Tests=1189816, 834 wallclock secs (57.02 usr  8.47 sys + 517.04 cusr 67.09 csys = 649.62 CPU",
+               "locale" : null,
+               "io_env" : "perlio",
+               "summary" : "O"
+            }
+         ],
+         "started" : "2024-10-25 11:02:19 +0200",
+         "duration" : 1163
+      }
+   ],
+   "harness3opts" : "",
+   "defaultenv" : 0,
+   "is56x" : 0,
+   "skipped_tests" : [],
+   "harness_only" : 1,
+   "ddir" : "/home/tib/smoke/Test-Smoke/perl-current",
+   "outfile" : "mktest.out",
+   "nonfatal_msgs" : [],
+   "lfile" : "/home/tib/smoke/Test-Smoke/bin/smokecurrent.log",
+   "showcfg" : 0,
+   "jsnfile" : "mktest.jsn"
+}

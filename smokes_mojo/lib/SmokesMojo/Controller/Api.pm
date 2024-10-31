@@ -2,11 +2,14 @@ package SmokesMojo::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
 use SmokeReports::ParsedToDb "parse_report_to_db";
+use SmokeReports::ParseSmokeDB "parse_smoke_report";
 
 use Cpanel::JSON::XS;
 use IO::Uncompress::Gunzip qw(gunzip);
 use IO::Compress::Gzip qw(gzip);
 use Digest::SHA qw(sha256_hex);
+use DateTime;
+use Date::Parse qw< str2time >;
 
 sub reports_from_id ($self) {
     my $schema = $self->app->schema;
@@ -83,6 +86,58 @@ sub _fail_text ($self, $msg) {
 FAIL
 $msg
 EOS
+}
+
+sub post_coresmokedb_report ($self) {
+    my $req = $self->req;
+
+    my $schema = SmokeReports::Dbh->schema;
+    my $sdb = $schema->resultset("Perl5Smoke");
+    my $id = $sdb->get_column("report_id")->max;
+    $id = $id + 1;
+
+    my $json = Cpanel::JSON::XS->new->utf8;
+    my $report_data = $json->decode($req->body);
+    $report_data->{$_} = $report_data->{'sysinfo'}{$_} for keys %{ $report_data->{'sysinfo'} };
+    $report_data->{$_} = $report_data->{'config'}{$_} for keys %{ $report_data->{'config'} };
+    delete $report_data->{'sysinfo'};
+    delete $report_data->{'config'};
+
+    $report_data->{lc($_)} = delete $report_data->{$_} for keys %$report_data;
+
+    $report_data->{smoke_date} = "" . DateTime->from_epoch(
+        epoch     => str2time($report_data->{smoke_date}),
+        time_zone => 'UTC',
+    );
+
+    my @log_data = qw< log_file out_file >;
+    $report_data->{$_} = delete $report_data->{$_} for @log_data;
+
+    my @to_unarray = qw< skipped_tests applied_patches compiler_msgs manifest_msgs nonfatal_msgs >;
+    $report_data->{$_} = join("\n", @{delete($report_data->{$_}) || []}) for @to_unarray;
+
+    my @other_data = qw< harness_only harness3opts summary >;
+    $report_data->{$_} = delete $report_data->{$_} for @other_data;
+
+    my $configs = delete $report_data->{'configs'};
+
+    my $raw = $json->encode($report_data);
+
+    my %row =
+      (
+       raw_report => $raw, #$req->body,
+       report_id => $id,
+       fetched_at => time(),
+      );
+    my $report = $sdb->create(\%row);
+
+    if ($report) {
+        parse_smoke_report($report, true);
+
+        $self->render(format => "text", text => "Created: $id");
+    } else {
+        $self->render(format => "text", text => "Error");
+    }
 }
 
 # Private API used to post NNTP reports received by mail
