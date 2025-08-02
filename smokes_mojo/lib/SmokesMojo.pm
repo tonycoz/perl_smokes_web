@@ -7,13 +7,16 @@ use lib path(curfile())->parent->parent->parent->parent->child("lib")->stringify
 use SmokeReports::Schema;
 use SmokeReports::Sensible;
 use SmokeReports::Dbh;
+use SmokeReports::Config;
+use SmokesMojo::Controller::PerfApiDev;
 use FindBin;
 
 # This method will run once at server start
 sub startup ($self) {
 
   # Load configuration from config file
-    my $config = $self->plugin(JSONConfig => { file => "../smoke.cfg" });
+  my $config = $self->plugin(JSONConfig => { file => "../smoke.cfg" });
+  #my $config = SmokeReports::Config::config();
     $self->config($config);
 
    # die path($FindBin::Bin)->parent->child("templates"), "\n";
@@ -47,6 +50,13 @@ sub startup ($self) {
     $r->post('/api/postreport/post')->to("api#post_report");
     $r->get('/api/nntp_from_id/<id:num>')->to("api#nntp_from_id");
     $r->get('/api/nntp_data/<id:num>')->to("api#nntp_data");
+
+  $r->get('/perf/')->to("perf#index");
+  $r->get('/perf/branch/')->to("perf#branch");
+
+    SmokesMojo::Controller::PerfApiDev->register("/api/perf", $r);
+
+  warn join ":", @{$self->static->paths};
 }
 
 sub schema ($self) {

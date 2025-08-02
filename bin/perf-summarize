@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+use strict;
+use Getopt::Long;
+use Perf::SummarizeDB
+  qw(perf_summarize_id perf_summarize_new perf_summarize_updates);
+use SmokeReports::Dbh;
+
+my $verbose;
+my $do_update;
+my $by_id;
+GetOptions("v|verbose" => \$verbose,
+	   "u|update" => \$do_update,
+	   "i|id" => \$by_id)
+    or die <<EOS;
+Usage: $0 [-v][-u][-i ids...]
+EOS
+
+++$|;
+
+my $progress = $verbose ? sub { print } : undef;
+
+my $schema = SmokeReports::Dbh->schema;
+if ($do_update) {
+    perf_summarize_updates($schema, $progress);
+}
+elsif ($by_id) {
+    for my $id (@ARGV) {
+	perf_summarize_id($schema, $id);
+    }
+}
+else {
+    perf_summarize_new($schema, $progress);
+}
+

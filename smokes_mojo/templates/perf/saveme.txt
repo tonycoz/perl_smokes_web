@@ -1,0 +1,26 @@
+% # just a dump for now, this is ugly
+%     for my $rep ($commit->{reports}->@*) {
+%       my $results = $rep->{report}{benchmark}{results};
+%       for my $test_name (sort keys %$results) {
+%         my $test = $results->{$test_name};
+<tr data-config="<%= $rep->{config_name} %>" data-test="<%= $test_name %>">
+  <td><span class="testname"><%= $test_name %></span>:
+% # FIXME: move this into the controller or object methods
+%         for my $stat_name (sort keys $test->{result0}->%*) {
+%           my $entry = $results->{$test};
+%           my @sort0 = sort $entry->{result0}->@*;
+%           my $med0 = $sort0[@sort0/2]; # FIXME: real median
+%           my @sort1 = sort $entry->{result1}->@*;
+%           my $med1 = $sort1[@sort1/2]; # FIXME: real median
+<%= $stat_name %>: <%= $med1 - $med0 %>
+%         } # stats
+%       } # tests
+  </td>
+  </tr>
+%     } # reports
+
+<div class="configs">
+% for my $config (@$config_names) {
+<span><%= "$config->{name} ($config->{count})" %>
+% }
+</div>

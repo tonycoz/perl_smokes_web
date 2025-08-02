@@ -1,0 +1,15 @@
+% layout 'default';
+% title 'Performance';
+<form action="/perf/branch/">
+Branch:
+% my @first = @{$branches}[0 .. 7];
+<select name="b" id="b">
+% for my $b (@first) {
+<option><%= $b %></option>
+% }
+<option value=""> -- I want an older branch -- </option>
+</select>
+<input type=submit value="Open">
+</form>
+<p>more to come here</p>
+<script type="text/javascript" src="/js/branch.js"></script>

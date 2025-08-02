@@ -19,7 +19,10 @@ Branch:<div class="autocomplete">
 <p>There's more than one sequence of commits recorded for this branch</p>
 % }
 <form id="filters" action="">
-  <div><input type=checkbox id=showduplicates> <label for="showduplicates">Show duplicate emailed reports</label></div>
+  <div>
+    <input type=checkbox id=showduplicates> <label for="showduplicates">Show duplicate emailed reports</label>
+    <input type=checkbox id=hideemptycommits> <label for="hideemptycommits">Hide commits with no reports</label>
+  </div>
   <script>
     document.getElementById("showduplicates").addEventListener("change",
     (ev) => {
@@ -30,7 +33,17 @@ Branch:<div class="autocomplete">
 	else {
 	    commits.classList.add("hideduplicates");
 	}
+        
       });
+    document.getElementById("hideemptycommits").addEventListener("change",
+    (ev) => {
+      let commits = document.getElementById("commits");
+      if (ev.target.checked) {
+        // something complicated
+      }
+      else {
+      }      
+    });
     </script>
 <table id="commits" class="hideduplicates">
   <tr class="filters">
@@ -59,7 +72,7 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %     my $status = $smoke->{status};  
 %     my @class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
 %     push @class, "duplicate" if $smoke->{is_duplicate};
-  <tr class="smoke <%= join " ", @class %>" id="report<%= $smoke->{id} %>" data-build-hash="<%= $smoke->{build_hash} %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
+  <tr class="smoke <%= join " ", @class %>" id="report<%= $smoke->{id} %>" data-build-hash="<%= $smoke->{build_hash} %>" data-duplicate="<%= $smoke->{is_duplicate} %>" data-config-hash="<%= $smoke->{config_hash} %>">
     <td class="status"><%= $status %></td>
 	<td><%= $smoke->{os} %></td>
 	<td><%= $smoke->{cpu} %></td>
@@ -75,6 +88,20 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 % }
     </td>
   </tr>
+% if (0) {
+% if ($smoke->{conf1_struct} && $smoke->{conf1_struct}{common} ) {
+% my $conf1 = $smoke->{conf1_struct};
+  <tr class="config <%= "@class" %>">
+    <td></td>
+    <td colspan=5>
+Common: <%= join(" ", $conf1->{common}->@*) || "(none)" %>  
+% my @extras = map { join " ", @$_ } $conf1->{extra}->@*;
+Alternatives: <%= join ' | ', map { $_ || "(empty)" } @extras %>
+    </td>
+    <td></td>
+  </tr>
+% }
+% }
 %   }
 %   }
 % }
@@ -89,3 +116,4 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 % }
 </datalist>
 <script type="text/javascript" src="/js/reports.js"></script>
+<script type="text/javascript" src="/js/branch.js"></script>

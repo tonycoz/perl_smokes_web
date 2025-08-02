@@ -163,3 +163,47 @@ tr.config td {
 .links a:hover {
     background-color: #CCC;
 }
+
+.selector button {
+    background-color: #EEE;
+    border-radius: 5px;
+    border: 0;
+    box-shadow: inset 2px 2px 3px #FFF,
+		inset -2px -2px 3px #DDD;
+    padding: 4px;
+}
+
+.selector button.selected {
+    background-color: #CFC;
+    box-shadow: inset 2px 2px 3px #DFD,
+		inset -2px -2px 3px #BEB;
+}
+
+.controlled {
+    display: none;
+}
+.controlled.current {
+    display: block;
+}
+
+#perfsearchwrap {
+    display: inline-block;
+    position: relative;
+}
+
+#perfsearch {
+    width: 300px;
+    padding: 2px;
+    display: inline-block;
+    border: 1px #888 solid;
+    background-color: #EEE;
+}
+
+#perfsearchcomplete {
+    position: absolute;
+    top: 1.8em;
+    left: 0px;
+    background-color: #FFF;
+    border: 1px #888 solid;
+    padding: 2px;
+}

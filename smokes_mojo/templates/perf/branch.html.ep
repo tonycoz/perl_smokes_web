@@ -1,0 +1,32 @@
+% layout 'default';
+% title 'Performance for branch ' . $branch;
+% use Mojo::JSON qw(to_json);
+% use Mojo::ByteStream "b";
+<form id="branchform" action="/perf/branch/">
+Branch:
+% my @first = @{$branches}[0 .. 7];
+<select name="b" id="b">
+% for my $b (@first) {
+<option<%= $branch eq $b ? ' selected' : ''%>><%= $b %></option>
+% }
+<option value=""> -- I want an older branch -- </option>
+</select>
+</form>
+<h2>Performance for branch <a href="https://github.com/Perl/perl5/commits/<%= $branch %>"><%= $branch %></a></h2>
+<script type="application/json" id="commitdata">
+<%= b(to_json($commits)) %>
+</script>
+<p id="status">Loading...</p>
+<p>p-value:<input type=number id=p value="0.01" size=5></p>
+<datalist id="branches">
+% for my $b (@$branches) {
+    <option value="<%= $b %>">
+% }
+</datalist>
+<div>
+  <canvas id="chart"></canvas>
+</div>
+<table id=special></table>
+<script type="text/javascript" src="/js/branch.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="/js/perf_branch.js"></script>
