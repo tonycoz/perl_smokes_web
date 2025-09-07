@@ -7,7 +7,8 @@
 <ul>
   <li>Save entered filters in the URL fragment, and initialize the
   filters from the fragment on load.  Allows bookmarking filtered
-  pages.</li>
+    pages.</li>
+  <li>Some clean up of the main page filter code.</li>
 </ul>
 
 <h3>8 April 2024</h3>
