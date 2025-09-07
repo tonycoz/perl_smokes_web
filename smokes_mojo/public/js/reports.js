@@ -19,12 +19,28 @@ window.addEventListener("load", (event) => {
     var from_in = document.getElementById("from");
     var reports = document.getElementById("commits")
 	.getElementsByClassName("smoke");
-    var do_search = function (e) {
+    var search_params = [ "status", "os", "arch", "cc", "from" ];
+    var do_search = function () {
 	var status = status_in.value;
 	var os = os_in.value;
 	var arch = arch_in.value;
 	var cc = cc_in.value;
 	var from = from_in.value;
+	var frag_obj = new URLSearchParams();
+	search_params.forEach((name) => {
+	    var val = document.getElementById(name).value;
+	    if (val != "")
+		frag_obj.set(name, val);
+	});
+	var frag = frag_obj.toString();
+	if (frag != "") {
+	    location.hash = frag;
+	}
+	else {
+	    // avoids a bare #
+	    history.pushState("", document.title,
+			      location.pathname + location.search);
+	}
 	for (var tr of reports) {
 	    var ok = 1;
 
@@ -55,6 +71,13 @@ window.addEventListener("load", (event) => {
 	    }
 	}
     };
+    var start = new URLSearchParams(location.hash.substring(1));
+    search_params.forEach((name) => {
+	if (start.has(name)) {
+	    document.getElementById(name).value = start.get(name);
+	}
+    });
+    do_search();
     status_in.addEventListener("input", do_search);
     os_in.addEventListener("input", do_search);
     arch_in.addEventListener("input", do_search);
