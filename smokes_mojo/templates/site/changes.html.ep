@@ -2,6 +2,14 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>7 September 2025</h3>
+
+<ul>
+  <li>Save entered filters in the URL fragment, and initialize the
+  filters from the fragment on load.  Allows bookmarking filtered
+  pages.</li>
+</ul>
+
 <h3>8 April 2024</h3>
 
 <ul>
