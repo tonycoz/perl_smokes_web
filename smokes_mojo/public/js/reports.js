@@ -12,20 +12,19 @@ function match_regexp(value, search_text) {
 }
 
 window.addEventListener("load", (event) => {
-    var status_in = document.getElementById("status");
-    var os_in = document.getElementById("os");
-    var arch_in = document.getElementById("arch");
-    var cc_in = document.getElementById("cc");
-    var from_in = document.getElementById("from");
     var reports = document.getElementById("commits")
 	.getElementsByClassName("smoke");
     var search_params = [ "status", "os", "arch", "cc", "from" ];
+    var search_cols =
+	{
+	    status: 0,
+	    os: 1,
+	    arch: 2,
+	    cc: 3,
+	    from: 4
+	};
     var do_search = function () {
-	var status = status_in.value;
-	var os = os_in.value;
-	var arch = arch_in.value;
-	var cc = cc_in.value;
-	var from = from_in.value;
+	// mirror the filter parameters in the URL fragment
 	var frag_obj = new URLSearchParams();
 	search_params.forEach((name) => {
 	    var val = document.getElementById(name).value;
@@ -41,27 +40,18 @@ window.addEventListener("load", (event) => {
 	    history.pushState("", document.title,
 			      location.pathname + location.search);
 	}
+	
+	var values = {};
+	search_params.forEach((name) => {
+	    values[name] = document.getElementById(name).value;
+	});
+	var match_names = search_params.filter(name => values[name] != "");
 	for (var tr of reports) {
-	    var ok = 1;
-
 	    var cols = tr.getElementsByTagName("td");
-	    if (status != "") {
-		ok = match_regexp(cols[0].textContent, status);
-	    }
-	    if (os != "" && ok) {
-		ok = match_regexp(cols[1].textContent, os);
-	    }
-	    if (arch != "" && ok) {
-		ok = match_regexp(cols[2].textContent, arch);
-	    }
-	    if (cc != "" && ok) {
-		var sp = cols[4].getElementsByTagName("span");
-		var cc_text = sp.length ? sp[0].title : cols[3].textContent;
-		ok = match_regexp(cc_text, cc);
-	    }
-	    if (from != "" && ok) {
-		ok = match_regexp(cols[4].textContent, from);
-	    }
+	    var ok = match_names.every((name) => {
+		var content = cols[search_cols[name]].textContent;
+		return match_regexp(content, values[name]);
+	    });
 
 	    if (ok) {
 		tr.classList.remove("hide");
@@ -73,16 +63,13 @@ window.addEventListener("load", (event) => {
     };
     var start = new URLSearchParams(location.hash.substring(1));
     search_params.forEach((name) => {
+	var ele = document.getElementById(name);
 	if (start.has(name)) {
-	    document.getElementById(name).value = start.get(name);
+	    ele.value = start.get(name);
 	}
+	ele.addEventListener("input", do_search);
     });
     do_search();
-    status_in.addEventListener("input", do_search);
-    os_in.addEventListener("input", do_search);
-    arch_in.addEventListener("input", do_search);
-    cc_in.addEventListener("input", do_search);
-    from_in.addEventListener("input", do_search);
     document.getElementById("filters").addEventListener("reset", (e) => {
 	setTimeout((e) => {
 	    do_search(e);
