@@ -85,6 +85,7 @@ td, th {
     font-size: 14px;
     padding-top: 6px;
     font-weight: 700;
+    position: relative;
 }
 
 #commits .commit .subject a {
@@ -95,6 +96,38 @@ td, th {
 #commits .commit a:hover {
     color: #222;
     text-decoration: underline;
+}
+
+#commits.cancopycommit .commit .copycommit {
+    display: block;
+}
+
+#commits .copycommit {
+    position: absolute;
+    right: 5px;
+    top: 2px;
+    background-color: #FFF;
+    display: none;
+}
+
+#commits .copycommit img {
+    border: 0px;
+}
+
+#commits .copycommit:hover {
+    background-color: #8F8;
+}
+
+#commits .copycommit:hover:before {
+    content: "copy sha to clipboard";
+}
+
+#commits .copycommit.highlight, #commits .copycommit.highlight:hover {
+    background-color: #0C0;
+}
+
+#commits .copycommit.highlight:before, #commits .copycommit.highlight:hover:before {
+    content: "Copied!";
 }
 
 #dbreport .fail {

@@ -37,7 +37,7 @@ Branch:<div class="autocomplete">
 	}
       });
     </script>
-<table id="commits" class="hideduplicates">
+<table id="commits" class="hideduplicates cancopycommit">
   <tr class="filters">
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
     <td><input type="text" id="os" size="8" placeholder="filter os"/></td>
@@ -59,7 +59,7 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %   for my $commit ($group->{commits}->@*) {
 %     $last_parent = $commit->{parent_sha} if $commit->{parent_sha};
   <tr class="commit">
-    <td colspan="6" class="subject" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a></td>
+    <td colspan="6" class="subject" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a><div class="copycommit" data-sha="<%= $commit->{sha} %>"><img src="/images/edit-copy-symbolic.svg" width="15" height="15" alt="copy commit SHA"></div></td>
     <td class="links"><a href="/?s=<%= $commit->{sha} %>" title="reports starting from this commit">C</a></td>
   </tr>
 %   for my $smoke ($commit->{smokes}->@*) {

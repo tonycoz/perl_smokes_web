@@ -12,6 +12,7 @@
       <li>Change the page title and heading for commit-linked pages</li>
     </ul>
   </li>
+  <li>Add a (painfully) simple UI to copy the commit SHA to the clipboard</li>
 </ul>
 
 <h3>7 September 2025</h3>
