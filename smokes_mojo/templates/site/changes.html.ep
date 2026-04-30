@@ -2,6 +2,18 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>30 April 2026</h3>
+
+<ul>
+  <li>Make links to report by commit more functional:
+    <ul>
+      <li>Add a commit-type link to the right of each commit row</li>
+      <li>(Mostly) fix the More... link at the bottom of the page</li>
+      <li>Change the page title and heading for commit-linked pages</li>
+    </ul>
+  </li>
+</ul>
+
 <h3>7 September 2025</h3>
 
 <ul>

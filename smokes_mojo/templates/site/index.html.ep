@@ -1,5 +1,5 @@
 % layout 'default';
-% title 'Reports for branch '.$branch;
+% title $start ? "Reports from commit ".substr($start, 0, 12) : 'Reports for branch '.$branch;
 <form id="branchform" action="/">
 Branch:<div class="autocomplete">
 % my @first = @{$branches}[0 .. 7];
@@ -11,7 +11,12 @@ Branch:<div class="autocomplete">
 </select>
 </div>
 </form>
+% if ($start) {
+<h2>Reports from commit <a href="https://github.com/Perl/perl5/commit/<%= $start %>"><%= substr($start, 0, 12) %></a></h2>
+% }
+% else {
 <h2>Reports for branch <a href="https://github.com/Perl/perl5/commits/<%= $branch %>"><%= $branch %></a></h2>
+% }
 % if ($message) {
 <p class="error"><%= $message %></p>
 % }
@@ -42,6 +47,7 @@ Branch:<div class="autocomplete">
     <td>Filter: <span title="Each filter is a JS regular expression possibly with ! before it to invert the selection">?</span></td>
    <td><input type="reset" value="Clear Filter"></td>
   </tr>
+% my $last_parent = '';
 % for my $group (@$groups) {
 %   if (@$groups > 1) {
 <tr class="group">
@@ -51,9 +57,10 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 </tr>
 %   }
 %   for my $commit ($group->{commits}->@*) {
+%     $last_parent = $commit->{parent_sha} if $commit->{parent_sha};
   <tr class="commit">
-    <td colspan="6" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a></td>
-    <td></td>
+    <td colspan="6" class="subject" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a></td>
+    <td class="links"><a href="/?s=<%= $commit->{sha} %>" title="reports starting from this commit">C</a></td>
   </tr>
 %   for my $smoke ($commit->{smokes}->@*) {
 %     my $status = $smoke->{status};  
@@ -81,7 +88,12 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 </table>
     </form>
 % if ($more_pages) {
+%   if ($start) {
+ <p><a href="/?s=<%= $last_parent %>">More...</a></p>
+%   }
+%   else {
  <p><a href="/?b=<%= $branch %>&amp;page=<%= $page+1 %>">More...</a></p>
+%   }
 % }
 <datalist id="branches">
 % for my $b (@$branches) {
