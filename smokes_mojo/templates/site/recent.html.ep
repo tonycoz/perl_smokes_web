@@ -2,7 +2,7 @@
 % title 'Recently downloaded reports';
 <h2>Recently downloaded reports</h2>
 <form id="filters" action="">
-<table id="commits">
+<table id="commits" class="commits">
   <tr class="filters">
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
     <td></td>
@@ -34,6 +34,7 @@
 % if ($logurl) {
 <a href="<%= $logurl %>">Log</a>
 % }
+<a href="<%= $smoke->{similar_url} %>">S</a>
     </td>
   </tr>
 %   }

@@ -6,6 +6,7 @@
   [<a href="<%= $logurl %>">Log</a>]
   % }
   [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
+  [<a href="<%= $pr->similar_url %>">similar</a>]
   [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
   [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
   [<a href="/dbparsedjson/<%= $id %>" title="how we parsed the report, meant for debugging">parsed detail</a>]

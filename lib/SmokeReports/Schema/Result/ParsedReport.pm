@@ -83,6 +83,10 @@ sub report_url ($self) {
     }
 }
 
+sub similar_url ($self) {
+    return $self->report_url . "/similar";
+}
+
 sub more_logurl ($self, $config) {
     $self->logurl and return $self->logurl;
     my $base = $config->{logpath};
@@ -101,21 +105,26 @@ sub update_columns($self) {
     grep !/^(?:nntp_id|smokedb_id)$/, $self->insert_columns;
 }
 
-# I originally tried 
-#sub update($self, $cols) {
-#    if ($cols && $cols1->{conf1_struct}) {
-#	require Cpanel::JSON::XS;#
-#	my %cols = %$cols;
-#	$cols{conf1_
-#    }
-#}
-
 sub _json {
     require Cpanel::JSON::XS;
 
     state $json = Cpanel::JSON::XS->new->utf8;
 
     $json;
+}
+
+# age in seconds
+sub age_seconds($self) {
+    require DateTime::Format::MySQL;
+    my $age; # default to undef
+    eval {
+	my $dt = DateTime::Format::MySQL->parse_datetime($self->when_at);
+	# parser returns a floating timezone time, but they're
+	# really UTC
+	$dt->set_time_zone('UTC');
+	$age = time() - $dt->epoch;
+    };
+    $age;
 }
 
 1;

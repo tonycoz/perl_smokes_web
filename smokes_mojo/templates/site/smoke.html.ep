@@ -1,0 +1,35 @@
+% my @class = @$class;
+% my $status = $smoke->{status};  
+% push @class, $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+% my $age = $smoke->{age_seconds};
+% my $age_fmt;
+% if ($age < 180) {
+%   $age_fmt = "$age seconds ago";
+% }
+% elsif ($age < 3600 * 4) {
+%   $age_fmt = int($age/60) . " minutes ago";
+% }
+% elsif ($age < 48 * 3600) {
+%   $age_fmt = int($age/3600) . " hours ago";
+% }
+% else {
+%   $age_fmt = int($age / (3600*24)) . " days ago";
+%   push @class, "old" if $age > 60 * 24 * 3600;
+% }
+  <tr class="smoke <%= join " ", @class %>" id="report<%= $smoke->{id} %>" data-build-hash="<%= $smoke->{build_hash} %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
+    <td class="status"><%= $status %></td>
+	<td><%= $smoke->{os} %></td>
+	<td><%= $smoke->{cpu} %></td>
+	<td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></span></td>
+	<td><%= $smoke->{from} %></td>
+	<td class="when_at"><span title="<%= $age_fmt %>"><%= $smoke->{when_at} %></span></td>
+    <td class="links">
+      <a href="<%= $smoke->{report_url} %>">Report</a>
+	<a href="<%= $smoke->{original_url} %>"><%= $smoke->{msg_id} ? "N" : "DB" %></a>
+% my $logurl = $smoke->{logurl};
+% if ($logurl) {
+<a href="<%= $logurl %>">Log</a>
+% }
+         <a href="<%= $smoke->{similar_url} %>" title="reports with a similar configuration">S</a>
+    </td>
+  </tr>

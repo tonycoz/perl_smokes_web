@@ -37,7 +37,7 @@ Branch:<div class="autocomplete">
 	}
       });
     </script>
-<table id="commits" class="hideduplicates cancopycommit">
+<table id="commits" class="commits hideduplicates cancopycommit">
   <tr class="filters">
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
     <td><input type="text" id="os" size="8" placeholder="filter os"/></td>
@@ -58,30 +58,11 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %   }
 %   for my $commit ($group->{commits}->@*) {
 %     $last_parent = $commit->{parent_sha} if $commit->{parent_sha};
-  <tr class="commit">
-    <td colspan="6" class="subject" id="commit<%= $commit->{sha} %>"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %> parent <%= substr($commit->{parent_sha}, 0, 12) %>"><%= $commit->{subject} %></a><div class="copycommit" data-sha="<%= $commit->{sha} %>"><img src="/images/edit-copy-symbolic.svg" width="15" height="15" alt="copy commit SHA"></div></td>
-    <td class="links"><a href="/?s=<%= $commit->{sha} %>" title="reports starting from this commit">C</a></td>
-  </tr>
+%= include 'site/commit', commit => $commit
 %   for my $smoke ($commit->{smokes}->@*) {
-%     my $status = $smoke->{status};  
-%     my @class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+%     my @class;
 %     push @class, "duplicate" if $smoke->{is_duplicate};
-  <tr class="smoke <%= join " ", @class %>" id="report<%= $smoke->{id} %>" data-build-hash="<%= $smoke->{build_hash} %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
-    <td class="status"><%= $status %></td>
-	<td><%= $smoke->{os} %></td>
-	<td><%= $smoke->{cpu} %></td>
-	<td><div class="compiler" title="<%= $smoke->{compiler} %>"><%= $smoke->{compiler} %></span></td>
-	<td><%= $smoke->{from} %></td>
-	<td class="when_at"><%= $smoke->{when_at} %></td>
-    <td class="links">
-      <a href="<%= $smoke->{report_url} %>">Report</a>
-	<a href="<%= $smoke->{original_url} %>"><%= $smoke->{msg_id} ? "N" : "DB" %></a>
-% my $logurl = $smoke->{logurl};
-% if ($logurl) {
-<a href="<%= $logurl %>">Log</a>
-% }
-    </td>
-  </tr>
+%= include 'site/smoke', smoke => $smoke, class => \@class
 %   }
 %   }
 % }

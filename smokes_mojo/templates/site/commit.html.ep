@@ -1,0 +1,4 @@
+  <tr class="commit">
+    <td colspan="6" class="subject"><div class="content"><a href="https://github.com/Perl/perl5/commit/<%= $commit->{sha} %>" title="<%= substr($commit->{sha}, 0, 12) %>"><%= $commit->{subject} %></a></div><div class="copycommit" data-sha="<%= $commit->{sha} %>"><img src="/images/edit-copy-symbolic.svg" width="15" height="15" alt="copy commit SHA"></div></td>
+    <td class="links"><a href="/?s=<%= $commit->{sha} %>" title="reports starting from this commit">C</a></td>
+  </tr>

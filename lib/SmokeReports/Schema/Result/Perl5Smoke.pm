@@ -259,4 +259,9 @@ sub log_filename ($self, $config) {
     return $file;
 }
 
+sub matrix ($self) {
+    my $js = $self->base_report;
+    return join "\n", _matrix($js)->@*;
+}
+
 1;

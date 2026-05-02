@@ -245,17 +245,18 @@ DIE
   }
   @body && $body[0] =~ $conf_re
     or die "No 'Configuration' line found\n";
+  my @matrix;
   my $common = $1 // "";
   $common eq "none" and $common = "";
   $common =~/\S/ and $common .= " ";
-  shift @body;
+  push @matrix, shift @body;
   @body && $body[0] =~ /^\s*-+\s+-+$/
     or die "No build matrix header found\n";
-  shift @body;
+  push @matrix, shift @body;
   my @conf1;
   while (@body && $body[0] =~ /^(?:[OFX?cmMt-]\s+)+(.*)$/) {
     push @conf1, canonify_config_opts("$common$1");
-    shift @body;
+    push @matrix, shift @body;
   }
   s/\s+$// for @conf1;
   my @conf2;
@@ -263,8 +264,9 @@ DIE
     my $conf = $1;
     $conf eq "no debugging" and $conf = "";
     push @conf2, $conf;
-    shift @body;
+    push @matrix, shift @body;
   }
+  $result->{matrix} = \@matrix;
   $result->{conf1} = \@conf1;
 
   $result->{compiler_msgs} = [];

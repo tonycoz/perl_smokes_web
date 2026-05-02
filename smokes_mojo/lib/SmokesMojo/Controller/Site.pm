@@ -107,7 +107,7 @@ sub _commits ($self, $branch, $start, $page) {
 	    my %s = (
 		$smoke->get_inflated_columns,
 		map { $_ => $smoke->$_ }
-		qw(from original_url report_url)
+		qw(from original_url report_url similar_url age_seconds)
 		);
 	    ++$seen_builds{$s{build_hash}} if $s{smokedb_id};
 	    $s{logurl} = $smoke->more_logurl($self->app->config);
@@ -219,7 +219,7 @@ sub recent ($self) {
 	my %temp = (
 	    $smoke->get_columns,
 	    map { $_ => $smoke->$_ }
-	    qw(from original_url report_url)
+	    qw(from original_url report_url similar_url)
 	    );
 	$temp{logurl} = $smoke->more_logurl($self->app->config);
 	$smoke = \%temp;
@@ -456,6 +456,135 @@ as => [ qw/count prefix / ],
 	 }
 	 );
      $self->render(groups => [ $groups->all ]);
+}
+
+sub similar_common($self, $pr, $br) {
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("ParsedReport");
+
+    my $reports = $prs->search
+	({
+	    config_hash => $pr->config_hash,
+	 },
+	 {
+	     rows => 100,
+	     order_by => { -desc => "when_at" }
+	 });
+    my $crs = $schema->resultset("GitCommit");
+    my @reports = $reports->all;
+
+    # strip out nntp reports that duplicate smokedb reports
+    my %seen_build =
+	map {; $_->build_hash => 1 }
+	grep $_->smokedb_id, @reports;
+    @reports = grep { $_->smokedb_id || !$seen_build{$_->build_hash} } @reports;
+
+    my %branches;
+    my %seen;
+    my %commits;
+    my $orig;
+    my $orig_commit;
+    my %commit_reports;
+    for my $report (@reports, $pr) {
+	$seen{$report->id}++ and next;
+	my $commit =
+	    $commits{$report->sha} // $crs->find({sha => $report->sha});
+	$commit or next;
+	$commits{$report->sha} = $commit;
+	my %report =
+	    (
+	     ( map { $_ => $report->$_ }
+	       qw(id sha status subject original_url report_url logurl similar_url
+                  os cpu cpu_full compiler from msg_id when_at smokedb_id age_seconds) ),
+	    );
+	# only add the original report once
+	push $commit_reports{$report->sha}->@*, \%report;
+	$orig = \%report if $report->id == $pr->id;
+    }
+    $orig or die "didn't see original";
+    for my $commit (values %commits) {
+	my %commit =
+	    (
+	     ( map { $_ => $commit->$_ } qw(sha subject branch ordering) ),
+	     reports => $commit_reports{$commit->sha},
+	    );
+	push $branches{$commit->branch}->@*, \%commit;
+	if ($commit{sha} eq $orig->{sha}) {
+	    $orig_commit = \%commit;
+	}
+    }
+    for my $branch (values %branches) {
+	@$branch = sort
+	{
+	    $b->{ordering} <=> $a->{ordering}
+	} @$branch;
+    }
+    my %branch_order = map { $_ => 1 } keys %branches;
+    # original report branch goes first
+    $branch_order{$orig_commit->{branch}} = 0;
+    # blead goes after topic branches, even if it's the original
+    $branch_order{blead} = 2;
+    # maint goes last
+    $branch_order{$_} = 3 for grep /^maint-5\.[0-9]{2}$/, keys %branches;
+    my @branches =
+	sort { $branch_order{$a->{name}} <=> $branch_order{$b->{name}}
+	       || $a->{name} cmp $b->{name} }
+        map +{
+	    name => $_,
+	    commits => $branches{$_},
+    }, keys %branches;
+
+    my $matrix;
+    if ($pr->smokedb_id) {
+	$matrix = "----------------------- ----------------------------------------------------\n"
+	    . $br->matrix;
+    }
+    else {
+	my $parsed = parse_report($br->raw_report, 0);
+	$matrix = join "\n", $parsed->{matrix}->@*;
+    }
+
+    $self->render(original => $orig,
+		  original_commit => $orig_commit,
+		  matrix => $matrix,
+		  branches => \@branches,
+		  template => "site/similar2");
+}
+
+sub dbsimilar ($self) {
+    my $report_id = $self->param("id");
+
+    my $schema = $self->app->schema;
+    my $dbr = $schema->resultset("Perl5Smoke");
+    my $sr = $dbr->find({ report_id => $report_id });
+    unless ($sr) {
+	return $self->reply->not_found;
+    }
+
+    my $pr = $sr->parsed_report;
+    unless ($pr) {
+	return $self->reply->not_found;
+    }
+
+    $self->similar_common($pr, $sr);
+}
+
+sub rawsimilar ($self) {
+    my $report_id = $self->param("id");
+
+    my $schema = $self->app->schema;
+    my $dbr = $schema->resultset("DailyBuildReport");
+    my $sr = $dbr->find({ nntp_num => $report_id });
+    unless ($sr) {
+	return $self->reply->not_found;
+    }
+
+    my $pr = $sr->parsed_report;
+    unless ($pr) {
+	return $self->reply->not_found;
+    }
+
+    $self->similar_common($pr, $sr);
 }
 
 1;

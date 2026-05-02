@@ -1,0 +1,40 @@
+% layout 'default';
+% title "Reports similar to...";
+
+<h2>Reports similar to...</h2>
+
+% {
+<h3>Report from branch <a href="/?b=<%== $original_commit->{branch} %>"><%= $original_commit->{branch} %></a>:</h3>
+<table class="commits cancopycommit">
+%= include 'site/commit', commit => $original_commit
+%= include 'site/smoke', smoke => $original, class => []
+</table>
+<p>Also included below highlighted in blue</p>
+
+% }
+
+<pre id="dbreport">
+<%= $matrix %>
+</pre>
+
+% for my $branch (@$branches) {
+<h3>Branch <a href="/?b=<%= $branch->{name} %>"><%== $branch->{name} %></a></h3>
+
+<table class="commits cancopycommit">
+%   for my $commit ($branch->{commits}->@*) {
+%= include 'site/commit', commit => $commit
+%     for my $report ($commit->{reports}->@*) {
+% my @class;
+% push @class, "original" if $report->{id} == $original->{id};
+%= include 'site/smoke', smoke => $report, class => \@class;
+%     }
+%   }
+</table>
+% }
+
+<h2>What's "similar"?</h2>
+
+<p>Same host, same os including the major and minor versions but not
+the "patch" or third level of version, same build configurations.</p>
+
+<script type="text/javascript" src="/js/similar2.js"></script>

@@ -2,6 +2,20 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>XX May 2026</h3>
+
+<ul>
+  <li>Make the copy the commit SHA icon only visible on hover</li>
+  <li>Add "S" links which show "similar" builds to that commit, handy
+    for seeing the history of that build, especially if you have a topic
+    branch that fixes a problem.  This currently only works for
+    CoreSmokeDB reports, not NNTP reports.</li>
+  <li>handle <a href="/?s=e6dfa909e10757e7906b67c06533058d0f40cb1c">long
+      subject lines better</a> (you need a blank line, not a newline
+    to end the commit subject)</li>
+  <li>refactor the commit and smoke report entries into their own templates</li>
+</ul>
+  
 <h3>4 May 2026</h3>
 
 <ul>

@@ -5,20 +5,24 @@ body, th, td {
     font-family: Arial, sans-serif;
 }
 
-table#commits {
+table.commits {
     padding: 1px;
     min-width: 800px;
 }
 
-#commits .compiler {
+.commits .compiler {
     width: 12em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-#commits .when_at {
+.commits .when_at {
     white-space: nowrap;
+}
+
+.commits .old .when_at {
+    color: #666;
 }
 
 #unparsed .subject {
@@ -40,25 +44,25 @@ td, th {
     border-bottom: 1px solid #AAA;
 }
 
-#commits tr.group td {
+.commits tr.group td {
     padding: 10px;
     font-size: 120%;
 }
 
-#commits tr.doubt .status {
+.commits tr.doubt .status {
     background-color: #EEC;
 }
 
-#commits tr.fail .status {
+.commits tr.fail .status {
     background-color: #F99;
 }
 
-#commits tr.pass .status {
+.commits tr.pass .status {
     background-color: #CFC;
 }
 
-#commits.hideduplicates tr.smoke:nth-child(even of :not([class*="duplicate"])),
-#commits:not([class*="hideduplicates"]) tr.smoke:nth-child(even) {
+.commits.hideduplicates tr.smoke:nth-child(even of :not([class*="duplicate"])),
+.commits:not([class*="hideduplicates"]) tr.smoke:nth-child(even) {
     background-color: #EEE;
 }
 
@@ -69,40 +73,47 @@ td, th {
     background-color: #CCC;
 }
 
-#commits.hideduplicates tr.duplicate {
+.commits.hideduplicates tr.duplicate {
     display: none;
 }
 
-#commits tr.hide {
+.commits tr.hide {
     display: none;
 }
 
-#commits tr.commit {
+.commits tr.commit {
     background-color: #DDD;
 }
 
-#commits .commit td {
+.commits .commit td {
     font-size: 14px;
     padding-top: 6px;
     font-weight: 700;
     position: relative;
 }
 
-#commits .commit .subject a {
+.commits .commit .subject div.content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 75em;
+}
+
+.commits .commit .subject a {
     color: #000;
     text-decoration: none;
 }
 
-#commits .commit a:hover {
+.commits .commit a:hover {
     color: #222;
     text-decoration: underline;
 }
 
-#commits.cancopycommit .commit .copycommit {
+.commits.cancopycommit .commit:hover .copycommit {
     display: block;
 }
 
-#commits .copycommit {
+.commits .copycommit {
     position: absolute;
     right: 5px;
     top: 2px;
@@ -110,24 +121,28 @@ td, th {
     display: none;
 }
 
-#commits .copycommit img {
+.commits .copycommit img {
     border: 0px;
 }
 
-#commits .copycommit:hover {
+.commits .copycommit:hover {
     background-color: #8F8;
 }
 
-#commits .copycommit:hover:before {
+.commits .copycommit:hover:before {
     content: "copy sha to clipboard";
 }
 
-#commits .copycommit.highlight, #commits .copycommit.highlight:hover {
+.commits .copycommit.highlight, #commits .copycommit.highlight:hover {
     background-color: #0C0;
 }
 
-#commits .copycommit.highlight:before, #commits .copycommit.highlight:hover:before {
+.commits .copycommit.highlight:before, #commits .copycommit.highlight:hover:before {
     content: "Copied!";
+}
+
+.commits tr.smoke.original td {
+    background-color: #CCF;
 }
 
 #dbreport .fail {
@@ -182,6 +197,10 @@ menu li.right {
   width: 100%;
   border: none;
   background-color: #CFC;
+}
+
+td.links {
+    white-space: nowrap;
 }
 
 td.links a {
