@@ -49,9 +49,22 @@ defined $start_num or $start_num = 69000;
 print "Group: count $msg_count first $first last $last\n"
   if $verbose > 1;
 
-$start_num -= 200;
+$start_num -= 100;
 
 $start_num < $first and $start_num = $first;
+
+my $seen_res = $dbr->search(
+    {
+	nntp_num => { '>=', $start_num },
+    },
+    {
+	columns => [ qw(msg_id) ],
+    });
+
+my %seen;
+while (my $row = $seen_res->next) {
+    $seen{$row->msg_id} = 1;
+}
 
 print "starting $start_num\n" if $verbose > 1;
 
@@ -60,12 +73,9 @@ my $msg_id = $nntp->nntpstat($start_num);
 do {
   my ($nntp_num) = split ' ', $nntp->message;
 
-  print "Message $nntp_num => $msg_id\n" if $verbose > 2;
+  print "Message $nntp_num/$last => $msg_id\n" if $verbose > 2;
 
-  # look for that msg id
-  my ($have_it) = $dbr->find({ msg_id => $msg_id });
-
-  if ($have_it) {
+  if ($seen{$msg_id}) {
     print "  have this message\n" if $verbose > 3;
   }
   else {
@@ -81,10 +91,9 @@ do {
 	 msg_id => $msg_id
 	);
     $dbr->create(\%row);
-    #print "Added $nntp_num/$msg_id\n";
-    #sleep 1;
+    ++$count;
   }
-} while (++$count < 100
+} while ($count < 100
 	 && defined($msg_id = $nntp->next));
 
 $nntp->quit;
