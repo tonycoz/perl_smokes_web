@@ -143,8 +143,6 @@ sub _test_todo_passed ($js) {
 }
 
 sub _group_tests_by_status ($js, $group_status) {
-    use Data::Dumper; $Data::Dumper::Indent = 1; $Data::Dumper::Sortkeys = 1;
-
     my %c_compilers = map {
 	$_->{key} => $_
     } @{$js->{c_compilers}};
@@ -154,7 +152,7 @@ sub _group_tests_by_status ($js, $group_status) {
     for my $config ($js->{configs}->@*) {
 	for my $result ($config->{results}->@*) {
 	    for my $io_env ($result->{failures}->@*) {
-		for my $test ($io_env->{failure}) {
+		for my $test ($io_env->{failures}->@*) {
 		    next if $test->{status} !~ /^\Q$group_status\E\b/;
 
 		    $max_name_length = length($test->{test})
