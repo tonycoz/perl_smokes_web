@@ -2,12 +2,6 @@
 % title 'Changes';
 <h2>Changes</h2>
 
-<h3>Soon</h3>
-
-<ul>
-  <lI>fix a bug in the dbreportjson generation that was causing undefined value warnings</li>
-</ul>
-  
 <h3>4 May 2026</h3>
 
 <ul>
@@ -22,6 +16,7 @@
       single query rather than doing a query for each message</li>
     </ul>
   </li>
+  <lI>fix a bug in the dbreportjson generation that was causing undefined value warnings</li>
 </ul>
 
 <h3>30 April 2026</h3>
