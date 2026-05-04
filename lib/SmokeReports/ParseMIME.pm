@@ -253,7 +253,7 @@ DIE
     or die "No build matrix header found\n";
   shift @body;
   my @conf1;
-  while (@body && $body[0] =~ /^(?:[OFX?-cmMt]\s+)+(.*)$/) {
+  while (@body && $body[0] =~ /^(?:[OFX?cmMt-]\s+)+(.*)$/) {
     push @conf1, canonify_config_opts("$common$1");
     shift @body;
   }
