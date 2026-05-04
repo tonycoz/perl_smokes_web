@@ -6,6 +6,16 @@
 
 <ul>
   <li>add a link to Github</li>
+  <li>update load-daily-build-reports:
+    <ul>
+      <li>don't rewind so much when starting a scan, this was intended
+      for daily scans, but since it counted 100 reports it already has
+      a scanned back 200 messages, it never fetched anything.  I've
+      done a manual load so things are generally up to date.</li>
+      <li>load a seen map of the expected range of nntp msg_ids in a
+      single query rather than doing a query for each message</li>
+    </ul>
+  </li>
 </ul>
 
 <h3>30 April 2026</h3>
