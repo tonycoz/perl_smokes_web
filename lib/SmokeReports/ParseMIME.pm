@@ -6,7 +6,7 @@ use DateTime::Format::Mail;
 use SmokeReports::Sensible;
 use SmokeReports::ParseUtil qw(canonify_config_opts fill_common);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 our @EXPORT_OK = qw(parse_report);
 
@@ -40,7 +40,8 @@ sub parse_report($report_data, $verbose) {
        cpu_full => "",
        host => "",
        compiler => "",
-       body => "",
+       body => "", # obsolete, used to be stored in parsed_reports
+       bodytext => undef, # not stored in the table
        from_email => "",
        error => "",
        when_at => undef,
@@ -132,6 +133,9 @@ sub _process_report($result, $report_data) {
   if (@body && $body[0] =~ /\bSmoke logs available at (\S+)$/) {
     $result->{logurl} = $1;
   }
+
+  $result->{bodytext} = join "", map "$_\n", @body;
+
   # some reports get stuff added at the front, scan for the prologue
   while (@body && $body[0] !~ /^\s*Automated smoke report /) {
     shift @body;

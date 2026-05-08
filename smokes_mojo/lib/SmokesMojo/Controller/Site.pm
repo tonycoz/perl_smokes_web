@@ -4,6 +4,8 @@ use SmokeReports::Sensible;
 use SmokeReports::ParseSmokeDB "parse_smoke_report";
 use SmokeReports::ParseMIME "parse_report";
 
+our $VERSION = "1.000";
+
 sub _branches ($self, $current) {
     my $schema = $self->app->schema;
     my $branches = $schema->storage->dbh_do
@@ -243,6 +245,7 @@ sub raw ($self) {
 			{ columns => "raw_report" });
     if ($r) {
 	my $raw = $r->raw_report;
+	my $parsed = parse_report($raw, 0);
 	$raw =~ tr/\r//d;
 	my ($headers, $body) = split /\n\n/, $raw, 2;
 	my @raw_headers = split /\n/, $headers;
@@ -256,7 +259,7 @@ sub raw ($self) {
 	    }
 	}
 	@headers = grep /^(?:subject|message-id|content-type|mime-version|date|content-transfer-encoding|content-type):/i, @headers;
-	my $non_raw = join("\n", @headers) . "\n\n" . $body;
+	my $non_raw = join("\n", @headers) . "\n\n" . $parsed->{bodytext};
 	return $self->render(raw => $non_raw,
 			     pr => $pr,
 			     id => $nntp_id);

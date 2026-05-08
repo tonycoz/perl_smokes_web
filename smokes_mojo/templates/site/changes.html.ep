@@ -2,6 +2,13 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>8 May 2026</h3>
+
+<ul>
+  <li>decode <a href="/raw/339768">quote-printable reports</a> when displaying
+  them</li>
+</ul>
+
 <h3>7 May 2026</h3>
 
 <ul>
