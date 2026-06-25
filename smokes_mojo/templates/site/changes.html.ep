@@ -2,6 +2,13 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>25 June 2026</h3>
+
+<ul>
+  <li id="dbreport">Properly style the "<span class="pass">PASS</span>" in smokedb report rendering</li>
+  <li>refactor failed and todo passed test extraction from the result class into the report parser, and make it <a href="https://github.com/tonycoz/perl_smokes_web/issues/17">actually work</a>, at least for new reports.</li>
+</ul>
+
 <h3>8 May 2026</h3>
 
 <ul>
