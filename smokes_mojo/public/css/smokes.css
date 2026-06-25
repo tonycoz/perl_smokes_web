@@ -150,6 +150,11 @@ td, th {
     color: #FFF;
 }
 
+#dbreport .pass {
+    background-color: #393;
+    color: #eee;
+}
+
 #branchform {
     position: absolute;
     right: 10px;
