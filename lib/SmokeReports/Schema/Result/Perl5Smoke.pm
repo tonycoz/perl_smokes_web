@@ -134,55 +134,6 @@ sub _matrix_legend ($js, $io_envs) {
     return @legend;
 }
 
-sub _test_failures ($js) {
-    return _group_tests_by_status($js, 'FAILED');
-}
-
-sub _test_todo_passed ($js) {
-    return _group_tests_by_status($js, 'PASSED');
-}
-
-sub _group_tests_by_status ($js, $group_status) {
-    my %c_compilers = map {
-	$_->{key} => $_
-    } @{$js->{c_compilers}};
-
-    my (%tests);
-    my $max_name_length = 0;
-    for my $config ($js->{configs}->@*) {
-	for my $result ($config->{results}->@*) {
-	    for my $io_env ($result->{failures}->@*) {
-		for my $test ($io_env->{failures}->@*) {
-		    next if $test->{status} !~ /^\Q$group_status\E\b/;
-
-		    $max_name_length = length($test->{test})
-			if length($test->{test}) > $max_name_length;
-
-		    my $key = $test->{test} . $test->{extra};
-		    push(
-			@{$tests{$key}{$config->{full_arguments}}{test}}, {
-			    test_env => $result->{test_env},
-			    test     => $test,
-			}
-			);
-		}
-	    }
-	}
-    }
-    my @grouped_tests;
-    for my $group (values %tests) {
-	push @grouped_tests, {test => undef, configs => [ ]};
-	for my $cfg (keys %$group) {
-	    push @{ $grouped_tests[-1]->{configs} }, {
-		arguments => $cfg,
-		io_envs   => join("/", map $_->{test_env}, @{ $group->{$cfg}{test} })
-	    };
-	    $grouped_tests[-1]{test} //= $group->{$cfg}{test}[0]{test};
-	}
-    }
-    return \@grouped_tests;
-}
-
 sub _duration_in_hhmm ($js) {
     return _time_in_hhmm($js->{duration});
 }
@@ -219,8 +170,26 @@ sub base_report ($self) {
     return Cpanel::JSON::XS->new->utf8->decode($self->raw_report);
 }
 
+sub _parse_report ($, $base_report) {
+    require SmokeReports::ParseSmokeDB;
+
+    return SmokeReports::ParseSmokeDB::parse_decoded_smoke_report
+	    ($base_report, $base_report);
+    my $parsed;
+    unless ( eval {
+	$parsed = SmokeReports::ParseSmokeDB::parse_decoded_smoke_report
+	    ($base_report, $base_report);
+	1; }) {
+	$base_report->{parse_error} = $@;
+    }
+
+    return $parsed;
+}
+
 sub full_report ($self) {
     my $js = $self->base_report;
+
+    my $parsed = $self->_parse_report($js);
     
     for my $config ($js->{configs}->@*) {
 	$config->{full_arguments} =
@@ -243,8 +212,11 @@ sub full_report ($self) {
     $js->{c_compilers} = _c_compilers($js);
     $js->{matrix} = _matrix($js);
     #$js->{matrix_legend} = _matrix_legend($js);
-    $js->{test_failures} = _test_failures($js);
-    $js->{test_todo_passed} = _test_todo_passed($js);
+    if ($parsed) {
+	my @keys = qw(test_failures test_todo_passed);
+	$js->@{@keys} = $parsed->@{@keys};
+	$js->{test_todo_passed} or die;
+    }
     $js->{duration_in_hhmm} = _duration_in_hhmm($js);
     $js->{average_in_hhmm} = _average_in_hhmm($js);
 

@@ -65,22 +65,22 @@ Test failures:
 % }
     % else {
 %   for my $failure ($js->{test_failures}->@*) {
-  <%=  $failure->{test}{test} %> (<%=  $failure->{test}{status} %> <%= $failure->{test}{extra} =~ s/\s+/ /gr %>)
+  <%=  $failure->{test} %> (<%=  $failure->{status} %> <%= $failure->{extra} =~ s/\s+/ /gr %>)
 %     for my $cfg ($failure->{configs}->@*) {      
-      [<%=  $cfg->{io_envs} %>] <%=  $cfg->{arguments} %>
+    [<%=  $cfg->{io_envs} %>] <%=  $cfg->{arguments} %>
 %     }
 
 %   }
 % }
 % if ($js->{test_todo_passed}->@*) {
-    Test todo-passed:
+Test todo-passed:
 %   for my $todo ($js->{test_todo_passed}->@*) {
-    <%=  $todo->{test}{test} %> (<%= $todo->{test}{extra} %>)
+  <%=  $todo->{test} %> (<%= $todo->{extra} =~ s/\s+/ /gr %>)
 %     for my $cfg ($todo->{configs}->@*) {
-      [<%=  $cfg->{io_envs} %>] <%= $cfg->{arguments} %>
+    [<%=  $cfg->{io_envs} %>] <%= $cfg->{arguments} %>
 %     }
+
 %   }
-    
 % }
 Compiler messages:
 % if (!$js->{compiler_msgs}) {

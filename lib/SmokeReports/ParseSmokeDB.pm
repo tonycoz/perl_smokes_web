@@ -6,37 +6,51 @@ use SmokeReports::ParseUtil qw(canonify_config_opts fill_common);
 
 my $json_parser = JSON->new->utf8;
 
-our @EXPORT_OK = qw(parse_smoke_report);
+our @EXPORT_OK = qw(parse_smoke_report parse_decoded_smoke_report);
+
+sub base_result() {
+  return
+    (
+     sha => "",
+     subject => "",
+     status => "",
+     os => "",
+     cpu => "",
+     cpu_count => 0,
+     cpu_full => "",
+     host => "",
+     compiler => "",
+     body => "",
+     from_email => "",
+     error => "",
+     configuration => undef,
+     branch => undef,
+     duration => 0,
+     msg_id => undef,
+     build_hash => '',
+     config_hash => '',
+     conf1_struct => {},
+    );
+}
 
 sub parse_smoke_report ($report, $verbose) {
-  my %result =
-    (
-       sha => "",
-       subject => "",
-       status => "",
-       os => "",
-       cpu => "",
-       cpu_count => 0,
-       cpu_full => "",
-       host => "",
-       compiler => "",
-       body => "",
-       from_email => "",
-       error => "",
-       configuration => undef,
-       branch => undef,
-       duration => 0,
-       msg_id => undef,
-       build_hash => '',
-       config_hash => '',
-       conf1_struct => {},
-    );
-
+  my %result = base_result();
   my $pjson;
   unless (eval { $pjson = $json_parser->decode($report); 1 }) {
     $result{error} = "JSON parse error: $@";
   }
   elsif (!eval { do_parse_smoke_report(\%result, $pjson); 1 }) {
+    $result{error} = $@;
+    print "Error: $@\n" if $verbose;
+  }
+
+  return \%result;
+}
+
+sub parse_decoded_smoke_report($pjson, $verbose) {
+  my %result = base_result();
+
+  if (!eval { do_parse_smoke_report(\%result, $pjson); 1 }) {
     $result{error} = $@;
     print "Error: $@\n" if $verbose;
   }
@@ -81,15 +95,59 @@ sub do_parse_smoke_report ($result, $report) {
 
   my %conf1;
   #my %conf2;
+  my %tests;
   my $index = 0;
   for my $conf ($report->{configs}->@*) {
     $conf1{canonify_config_opts($conf->{arguments})} = $index;
     # NNTP reports don't always include the PERLIO part :/
-    #my @opts;
-    #push @opts, "PERL
-    #$conf2{$conf->{}} = $conf->{index};
+    if ($conf->{results}) {
+      for my $res ($conf->{results}->@*) {
+	if ($res->{failures}) {
+	  for my $failure ($res->{failures}->@*) {
+	    my $f = $failure->{failure};
+	    my $key = "$f->{test} ($f->{status} $f->{extra})";
+	    $tests{$f->{status}}{$key}{result} =
+	      {
+	       test => $f->{test},
+	       status => $f->{status},
+	       extra => $f->{extra},
+	      };
+	    #print "$conf->{arguments}-$res->{io_envs}\n";
+	    #print join("/", keys %$res), "\n";
+	    my @args = grep /\S/, $conf->{arguments};
+	    push @args, "DEBUGGING" if $conf->{debugging} eq "D";
+	    push $tests{$f->{status}}{$key}{configs}->@*,
+	      {
+	       arguments => "@args",
+	       io_envs => $res->{io_env},
+	       locale => $res->{locale},
+	      };
+	  }
+	}
+      }
+    }
     ++$index;
   }
+  my @test_failures;
+  my @todo_passed;
+  for my $which ([ $tests{FAILED} || {}, \@test_failures ],
+		 [ $tests{PASSED} || {}, \@todo_passed   ]) {
+    my ($tests, $save) = @$which;
+    for my $key (sort keys %$tests) {
+      my @confs = $tests->{$key}{configs}->@*;
+      my %entry = $tests->{$key}{result}->%*;
+      $entry{configs} =
+	[
+	 sort { $a->{io_envs} cmp $b->{io_envs} ||
+		  ($a->{locale} // "") cmp ($b->{locale} // "") ||
+		  $a->{arguments} cmp $b->{arguments} } @confs
+	];
+      push @$save, \%entry;
+    }
+  }
+  $result->{test_failures} = \@test_failures;
+  $result->{test_todo_passed}   = \@todo_passed;
+
   my @conf1 = sort { $conf1{$a} <=> $conf1{$b} } keys %conf1;
   $result->{conf1} = \@conf1;
 
