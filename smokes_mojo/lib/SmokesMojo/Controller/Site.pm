@@ -3,6 +3,7 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use SmokeReports::Sensible;
 use SmokeReports::ParseSmokeDB "parse_smoke_report";
 use SmokeReports::ParseMIME "parse_report";
+use POSIX ();
 
 our $VERSION = "1.000";
 
@@ -505,13 +506,21 @@ sub similar_common($self, $pr, $br) {
 	$orig = \%report if $report->id == $pr->id;
     }
     $orig or die "didn't see original";
+
+    # 60 days ago
+    my $old_date = POSIX::strftime("%Y-%m-%d", gmtime(time - 86_400 * 60));
+    warn "\n\nOld $old_date\n\n";
+
+    my %branch_newish;
     for my $commit (values %commits) {
 	my %commit =
 	    (
 	     ( map { $_ => $commit->$_ } qw(sha subject branch ordering) ),
 	     reports => $commit_reports{$commit->sha},
 	    );
-	push $branches{$commit->branch}->@*, \%commit;
+	my $branch = $commit->branch;
+	push $branches{$branch}->@*, \%commit;
+	$branch_newish{$branch} ||= $commit->seen_at gt $old_date;
 	if ($commit{sha} eq $orig->{sha}) {
 	    $orig_commit = \%commit;
 	}
@@ -523,12 +532,15 @@ sub similar_common($self, $pr, $br) {
 	} @$branch;
     }
     my %branch_order = map { $_ => 1 } keys %branches;
+
     # original report branch goes first
     $branch_order{$orig_commit->{branch}} = 0;
     # blead goes after topic branches, even if it's the original
     $branch_order{blead} = 2;
-    # maint goes last
+    # maint go next
     $branch_order{$_} = 3 for grep /^maint-5\.[0-9]{2}$/, keys %branches;
+    # old topic branches go last
+    $branch_order{$_} = 4 for grep !$branch_newish{$_}, keys %branches;
     my @branches =
 	sort { $branch_order{$a->{name}} <=> $branch_order{$b->{name}}
 	       || $a->{name} cmp $b->{name} }

@@ -2,6 +2,16 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>25 July 2026</h3>
+
+<ul>
+  <li>Rearrange the list of branches on the "similar to" page so only
+  relatively new smoke-me branches are listed before blead, maint.
+  Older smoke-me branches are listed after smoke-me and maint.  The
+  idea is that you're using "similar to" to compare a topic branch to
+  blead/maint, making the older smoke-me branches less useful.<li>
+</ul>
+
 <h3>25 June 2026</h3>
 
 <ul>
