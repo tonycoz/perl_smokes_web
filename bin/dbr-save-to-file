@@ -1,0 +1,76 @@
+#!perl
+use SmokeReports::Dbh;
+use SmokeReports::Sensible;
+use Cpanel::JSON::XS;
+
+my $schema = SmokeReports::Dbh->schema;
+
+my $message_only;
+if (@ARGV && $ARGV[0] eq "-m") {
+  shift;
+  ++$message_only;
+}
+
+my $id = shift
+    or usage();
+my $outname = shift;
+
+my $dbr = $schema->resultset("DailyBuildReport");
+
+my $nntp = $dbr->find({ nntp_num => $id })
+  or die "Cannot find report $id\n";
+
+my $fh;
+if ($outname) {
+  open $fh, ">", $outname
+    or die "Cannot open $outname: $!\n";
+}
+else {
+  $fh = \*STDOUT;
+}
+if ($message_only) {
+  print $fh $nntp->raw_report;
+}
+else {
+  my %row = $nntp->get_inflated_columns;
+  my $json = Cpanel::JSON::XS->new->pretty->utf8;
+  print $fh $json->encode(\%row);
+}
+close $fh
+  or die "Failed to close output: $!\n";
+
+sub usage {
+  die <<"USAGE";
+Usage: $0 [-m] nntp-num [outputfile]
+  Write JSON of daily build reports record to outputfile or stdout.
+ -m - write just the MIME message
+USAGE
+}
+
+=head1 NAME
+
+dbr-safe-to-json - save a daily build report record to a file
+
+=head1 SYNOPSIS
+
+  # save JSON dbr record to outputfile
+  perl -Mblib bin/dbr-save-to-file nntpnum outpufile
+
+  # save JSON dbr record to STDOUT
+  perl -Mblib bin/dbr-save-to-file nntpnum
+
+  # save raw dbr message to output file
+  perl -Mblib bin/dbr-save-to-file -m nntpnum outpufile
+
+  # save raw dbr message to STDOUT
+  perl -Mblib bin/dbr-save-to-file -m nntpnum
+
+=head1 DESCRIPTION
+
+Used to generate test data for input to F<t/10parse_mime.t>.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
