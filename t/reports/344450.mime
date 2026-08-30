@@ -1,0 +1,147 @@
+Newsgroups: perl.daily-build.reports
+Path: nntp.perl.org
+Xref: nntp.perl.org perl.daily-build.reports:344450
+Return-Path: <perl@greerga.m-l.org>
+Mailing-List: contact daily-build-reports-help@perl.org; run by ezmlm
+Delivered-To: mailing list daily-build-reports@perl.org
+Received: (qmail 30219 invoked from network); 20 Aug 2026 20:21:25 -0000
+Received: from 10-41-2-203.mail-in-external.mail.svc.cluster.local (HELO
+ mail-in.ntp.dev) (10.41.2.203) by x6.develooper.com with SMTP; 20 Aug 2026
+ 20:21:25 -0000
+Received: from inbound-egress-10.mailchannels.net
+ (inbound-egress-10.mailchannels.net [23.83.212.2]) by mail-in.ntp.dev
+ (Postfix) with ESMTP id 268536B for <daily-build-reports@perl.org>; Thu, 20
+ Aug 2026 20:21:21 +0000 (UTC)
+ARC-Seal: i=2; s=mail-out-2; d=ntp.dev; t=1787257281; a=rsa-sha256; cv=pass;
+ b=wkx5KJpU0vWmWDNNPEOJFQ20cBWXA0+LqyS2bJECSfl0jdJaP6Iz9KghOoRO5XXxoVInvz
+ vvST1+Ke4ECzzmofwWHp8IrYjfcwUt+K1xb/+h0wzKmQtllGVRaJBqvnu6kOxNikWYF8j0
+ usf24wNXpNF7SUXqQVuV+1ToT+YyMMaZIJIShpjAg1BRhESVGdaE/lkhP5Gkd+LaiciOBQ
+ buUe8YtA2DkaJ4qU9W6uFrkMTD1/byr7b/YtC8j2HQ3g2Cdo0uGRZhkK6CKDDr3EUOBIcU
+ SSNcUY+8odhdmGGeOqKV5O3E0wL9Td8dODsMAxNlRblkLJ7Vawo3TOqAnObl4w==
+ARC-Authentication-Results: i=2; mail-in.ntp.dev; dkim=none; spf=pass
+ (mail-in.ntp.dev: domain of perl@greerga.m-l.org designates 107.170.155.49 as
+ permitted sender) smtp.mailfrom=perl@greerga.m-l.org; arc=pass
+ ("mailchannels.net:s=arc-2022:i=1"); dmarc=pass (policy=quarantine)
+ header.from=m-l.org
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=ntp.dev;
+ s=mail-out-2; t=1787257281;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=8zMgXFcdjw9SzpCe3sd6yjPuSdvbjw0A8BB4T4zRQds=;
+ b=YeTU8sFrLetcYIzZRUi23KO1r8iNlOoP3kdVEc59NcAkouBBkYNq/DKSpZ4B1lXLZ9hbYR
+ kSKgFpkD2iGHyLoR7ccDBDXtJhRP3QXNi7VNiIGguC+BEKkhq/EsvULaytVj9W3rMs2Keb
+ Pp61qOOEUXWDlWA0/B/cE7rPCkLJJKiwa5/ACnRz0i8TkEXZQRiEUaNn0YFeJ4r1qZfJbE
+ 5Sr6ZwoHxckueeUYrvavUnV82MXfC8nB2xvn0sIKS2AHnYfrpddnJouwCQmbVwZuk0WOLT
+ 5JsmcpzJh7W/8muL44IPH/RphQZxytrGUsxsT5CdWcCF8Os9apPiU1uOP/DAZA==
+ARC-Seal: i=1; a=rsa-sha256; d=mailchannels.net; s=arc-2022; cv=none;
+ t=1787257276;
+ b=oY5yRymJfT3B9CySkg9Fnk9WRfqZJpDsLIS7zpTGZ4PduUWh3CpzB3PUY2fh72uXlYfYxn
+ PIpC1Z4gaQPbDRaRJTrpiQnAdXu6VToPMc8To/S8xPARktx3/ik5nAuRtZbgQtDyja+FfJ
+ GZEQDpMgiQaaWpAJi7OwMYjdoyusPMiuhk4k6OzMuxJReSe/9fsjERShD9g/CRJbrINb2W
+ SXq0Q00iLCutPjFoO5aiZIwdu1NaDgEKr1pO7JN7cVELUQTJwO2GYB+49BNN1Jcj2kQjrV
+ MMjZR6qo+yWCyGVZ3bdKP/pY3VyYjFFHrIJLGq/Z/fNML55hxBIZ+mVP+z3oXQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mailchannels.net; s=arc-2022; t=1787257276;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=8zMgXFcdjw9SzpCe3sd6yjPuSdvbjw0A8BB4T4zRQds=;
+ b=GeiQ45PqpAfmJOpR9f8W3e3uEwobJnTvSvgb78sQVlx3OamcvghowxS2k5kIVprynEWwSz
+ 4CIXn3WmsO4ag4J4nQSv9gsia3MkX+gT/2dUFgNpNMRnOdi4DpQoy5/ubP4fW1SexyH0iv
+ yaX7Jcc2R18Ife23rmdjwQ3fQ7QnB16xBy4AiPumdp+doFXGMGdJHZt6aJnbQ+0DUyXAq4
+ rugl/cE9Y/tLBXW1MEgANHMZw2mcYLjk0vbNrJSeICPVe5yMT9GOV90Hq3yYMjtYLwzQrX
+ DFKkDAF/WjjbTYGAZBy0HTqib17+ruVnlXQZvfEQ+55W9JJG0JQLnkT6zLHw6w==
+ARC-Authentication-Results: i=1; inbound-rspamd-7b645d6c58-slmp4; none
+X-Message-ID: qWGgcdvio4vD4YD6e5ScM9Zd
+Received: from m-l.org (drei.m-l.org [107.170.155.49]) (using TLSv1.3 with
+ cipher TLS_AES_256_GCM_SHA384) by 100.96.17.126 (trex/8.0.2); Thu, 20 Aug
+ 2026 20:21:20 +0000
+Authentication-Results: inbound.mailchannels.net; spf=pass
+ smtp.mailfrom=perl@greerga.m-l.org; dkim=none; dmarc=pass (policy=quarantine;
+ pct=100; status=pass); arc=none
+Received-SPF: pass (dmarc-service-554597bf55-g9nvs: domain of greerga.m-l.org
+ designates 107.170.155.49 as permitted sender) client-ip=107.170.155.49;
+ envelope-from=perl@greerga.m-l.org; helo=m-l.org;
+Received: from nimo-n100 (nimo-n100.local [10.0.1.106]) by vier.local
+ (8.18.2/8.18.2) with SMTP id 67KKL8kT1120135; Thu, 20 Aug 2026 16:21:08 -0400
+X-MS-Reactions: disallow
+Message-ID: <202608202021.67KKL8kT1120135@vier.local>
+Mime-version: 1.0
+To: daily-build-reports@perl.org
+Content-transfer-encoding: quoted-printable
+Subject: Smoke [blead] v5.45.1-242-gfd584474cf FAIL(F) MSWin32 Win10 Build
+ 26200 (Intel64/4 cpu) {mswin32-win10-blead}
+Date: Thu, 20 Aug 2026 16:21 -0400
+Content-type: text/plain; charset="iso-8859-1"
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.6.4
+ (m-l.org [107.170.155.49]); Thu, 20 Aug 2026 16:21:15 -0400 (EDT)
+X-Spamd-Result: default: False [-2.00 / 11.00];
+ DMARC_POLICY_ALLOW(-1.00)[m-l.org,quarantine];
+ ARC_ALLOW(-1.00)[mailchannels.net:s=arc-2022:i=1]; R_DKIM_NA(1.00)[];
+ R_SPF_ALLOW(-1.00)[+mx]; RCVD_NO_TLS_LAST(0.10)[];
+ MIME_GOOD(-0.10)[text/plain]; ASN(0.00)[asn:14061, ipnet:107.170.128.0/19,
+ country:US]; MIME_TRACE(0.00)[0:+]; TO_MATCH_ENVRCPT_ALL(0.00)[];
+ FROM_HAS_DN(0.00)[]; EXTERNAL_RELAY_AUTHENTICATED(0.00)[];
+ TO_DN_NONE(0.00)[]; RCPT_COUNT_ONE(0.00)[1]; MISSING_XM_UA(0.00)[];
+ DBL(0.00)[107.170.155.49:from]; RCVD_VIA_SMTP_AUTH(0.00)[];
+ RCVD_COUNT_THREE(0.00)[3]; FROM_EQ_ENVFROM(0.00)[];
+ ARC_SIGNED(0.00)[ntp.dev:s=mail-out-2:i=2]
+X-Rspamd-Server: mail-in-7b94c7b9cd-zvmgs
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 268536B
+Approved: news@nntp.perl.org
+From: perl@greerga.m-l.org ("George Greer")
+
+Smoke logs available at http://m-l.org/~perl/smoke/perl/mswin32-x64-multi-t=
+hread-win10/mswin32-win10-blead/logfd584474cf36982e2f2ef85b042ea51bb02fffaa=
+log.gz
+
+Automated smoke report for branch blead 5.45.2 patch fd584474cf36982e2f2ef8=
+5b042ea51bb02fffaa v5.45.1-242-gfd584474cf
+nimo-n100: Intel(R) N100(~806 MHz) (Intel64/4 cpu)
+    on        MSWin32 - Win10 Build 26200
+    using     cl version 19.44.35227
+    smoketime 7 hours 57 minutes (average 1 hour 59 minutes)
+
+Summary: FAIL(F)
+
+O =3D OK  F =3D Failure(s), extended report at the bottom
+X =3D Failure(s) under TEST but not under harness
+? =3D still running or test results not (yet) available
+Build failures during:       - =3D unknown or N/A
+c =3D Configure, m =3D make, M =3D make (after miniperl), t =3D make test-p=
+rep
+
+v5.45.1-242-gfd584474cf  Configuration (common) none
+----------- ---------------------------------------------------------
+O O=20=20=20=20=20=20=20=20=20
+O F         -Duseithreads
+| +--------- -DDEBUGGING
++----------- no debugging
+
+
+Failures: (common-args) none
+[default] -DDEBUGGING -Duseithreads
+../lib/locale_threads.t.....................................FAILED
+    2
+
+Passed Todo tests: (common-args) none
+[default]=20
+[default] -DDEBUGGING
+../t/win32/stat.t...........................................PASSED
+    42
+../ext/IPC-Open3/t/IPC-Open3.t..............................PASSED
+    33
+
+[default] -Duseithreads
+[default] -DDEBUGGING -Duseithreads
+../ext/IPC-Open3/t/IPC-Open3.t..............................PASSED
+    33
+(See log because mailing list size limit is too small.)
+Non-Fatal messages(MSWin32):
+
+--=20
+Report by Test::Smoke v1.72 running on perl 5.42.0
+(Reporter v0.053 / Smoker v0.046)
+

@@ -1,9 +1,9 @@
 #!perl
-use strict;
-use warnings;
+use SmokeReports::Sensible;
 use Test::More;
-use JSON;
+use Cpanel::JSON::XS;
 use SmokeReports::ParseMIME;
+use Data::Dumper;
 
 {
     my $j = load_json("t/243680.json");
@@ -33,6 +33,60 @@ use SmokeReports::ParseMIME;
 			 ]
 	      }, "conf1_struct")
       or do { use Data::Dumper; diag(Dumper($p->{conf1_struct})) };
+    is_deeply($p->{test_failures_summary}, [], "no failures");
+    is_deeply($p->{todo_passed_summary}, [], "no todo_passed");
+}
+
+{
+  my $p = parse_mime_file('t/reports/344450.mime');
+  ok($p, "parsed 344450");
+  is($p->{msg_id}, '<202608202021.67KKL8kT1120135@vier.local>', "msg_id");
+  is($p->{sha}, 'fd584474cf36982e2f2ef85b042ea51bb02fffaa', "sha");
+  is_deeply($p->{test_failures_summary},
+	    [
+	     {
+	      file => '../lib/locale_threads.t',
+	      configs =>
+	      [
+	       "[perlio] -DDEBUGGING -Duseithreads"
+	      ],
+	      messages =>
+	      [
+	       "2"
+	      ],
+	      },
+	    ],
+	    "test_failures");
+  is_deeply($p->{todo_passed_summary},
+	    [
+	     {
+	      file => '../ext/IPC-Open3/t/IPC-Open3.t',
+	      configs =>
+	      [
+	       '[perlio]',
+	       '[perlio] -DDEBUGGING',
+	       '[perlio] -DDEBUGGING -Duseithreads',
+	       '[perlio] -Duseithreads',
+	      ],
+	      messages =>
+	      [
+	       '33'
+	      ],
+	     },
+	     {
+	      file => '../t/win32/stat.t',
+	      configs =>
+	      [
+	       '[perlio]',
+	       '[perlio] -DDEBUGGING',
+	      ],
+	      messages =>
+	      [
+	       '42'
+	      ],
+	     },
+	    ], "todo_passed")
+    or diag Dumper($p->{todo_passed});
 }
 
 done_testing();
@@ -43,6 +97,15 @@ sub load_json {
 	or die "Cannot open $fname: $!\n";
     my $raw = do { local $/; <$fh> };
     close $fh;
-    my $json = JSON->new->utf8;
+    my $json = Cpanel::JSON::XS->new->utf8;
     return $json->decode($raw);
+}
+
+sub parse_mime_file($fname) {
+  open my $fh, "<:raw", $fname
+    or die "Cannot open $fname: $!\n";
+  my $raw = do { local $/; <$fh> };
+  close $fh;
+  
+  return SmokeReports::ParseMIME::parse_report($raw, 0);
 }

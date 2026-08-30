@@ -27,6 +27,74 @@ my $parser;
     }
 }
 
+my sub _parse_tests ($body, $common) {
+  # older test::smoke has the different runtime configs
+  # Failures: (common-args) none
+  # [stdio/perlio/C.UTF-8] 
+  # [stdio/perlio/C.UTF-8] -Duse64bitint
+  # ../t/op/glob.t..............................................FAILED
+  #     19
+  #
+  # Passed Todo tests: (common-args) none
+  # [default] 
+  # [default] -DDEBUGGING
+  # ../t/win32/stat.t...........................................PASSED
+  #     42
+  # ../ext/IPC-Open3/t/IPC-Open3.t..............................PASSED
+  #     33
+
+  my %tests;
+  my @common = $common eq "none" ? () : $1;
+  while (@$body && $body->[0] =~ /^\[/) {
+    # consume any config lines
+    my @cfgs;
+    while (@$body && $body->[0] =~ m(^\[([^\]]+)\](?:\s(.*))?$)) {
+      shift @$body;
+      my ($run_cfgs, $build_cfgs) = ($1, $2);
+      for my $run_cfg (split '/', $run_cfgs) {
+	my $rcfg = $run_cfg;
+	$rcfg eq "default" and $rcfg = "perlio";
+	push @cfgs, join " ", "[$rcfg]", grep /\S/, @common, $build_cfgs;
+      }
+    }
+    while (@$body && $body->[0] =~ m(^([\./\w-]+\.t)\W)) {
+      my $file = $1;
+      my $line = shift @$body;
+      substr($line, 0, length $file, "");
+      $line =~ s/^\.+//;
+      print "Leftover $line\n" unless $line =~ /^(PASSED|FAILED)$/;
+      my @messages;
+      while (@$body && $body->[0] =~ /^\s+(\S.*)$/) {
+	push @messages, $1;
+	shift @$body;
+      }
+      for my $cfg (@cfgs) {
+	push $tests{$file}{"@messages"}->@*, [ $cfg, \@messages ];
+      }
+    }
+    if (@$body && $body->[0] !~ /\S/) {
+      shift @$body;
+    }
+  }
+  my @tests;
+  for my $file (sort keys %tests) {
+    for my $msg (sort keys $tests{$file}->%*) {
+      my %entry =
+	(
+	 file => $file,
+	 configs => [],
+	);
+      for my $cfg_m ($tests{$file}{$msg}->@*) {
+	$entry{messages} = $cfg_m->[1];
+	push $entry{configs}->@*, $cfg_m->[0];
+      }
+      $entry{configs}->@* = sort $entry{configs}->@*;
+      push @tests, \%entry;
+    }
+  }
+  \@tests;
+}
+
 sub parse_report($report_data, $verbose) {
 
     my %result =
@@ -52,6 +120,8 @@ sub parse_report($report_data, $verbose) {
        build_hash => '',
        config_hash => '',
        conf1_struct => {},
+       test_failures_summary => [],
+       todo_passed_summary => [],
       );
     eval {
       _process_report(\%result, $report_data);
@@ -296,6 +366,12 @@ DIE
     }
     elsif ($line =~ /^Branch: ([\w\/-]+)$/) {
       $result->{branch} = $1;
+    }
+    elsif ($line =~ /^Failures:\s+\(common-args\)\s+(.*)/) {
+      $result->{test_failures_summary} = _parse_tests(\@body, $1);
+    }
+    elsif ($line =~ /^Passed Todo tests:\s+\(common-args\)\s+(.*)/) {
+      $result->{todo_passed_summary} = _parse_tests(\@body, $1);      
     }
   }
 
