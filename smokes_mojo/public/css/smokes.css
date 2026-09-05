@@ -228,6 +228,38 @@ tr.config td {
     font-size: 90%;
 }
 
+.tests .tests_actual {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60em;
+}
+
+.tests .tests_actual:hover {
+    white-space: wrap;
+    overflow: visible;
+}
+
+.tests .test_detail {
+    position: relative;
+}
+
+.tests .test_detail .configs {
+    position: absolute;
+    width: 60em;
+    top: 24px;
+    left: 20px;
+    display: none;
+    background: #EEE;
+    border: 1px solid #888;
+    padding: 2px;
+    z-index: 100;
+}
+
+.tests .test_detail:hover .configs {
+    display: block;
+}
+
 .tests .testhead_failed {
     font-weight: bold;
     color: #F00;

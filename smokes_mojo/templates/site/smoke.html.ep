@@ -37,15 +37,20 @@
 %     || $smoke->{todo_passed_summary} && $smoke->{todo_passed_summary}->@*) {
   <tr class="tests <%= "@$class" %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
     <td></td>
-    <td colspan=4>
+    <td colspan=4 class="tests_actual">
 %   for my ($type, $tests) ("failed", $smoke->{test_failures_summary},
 %                           "passed", $smoke->{todo_passed_summary}) {
 %      my @tests = $tests ? @$tests : ();
 %      if (@tests) {
 <span class="testhead_<%= $type %>"><%= $type %></span>
 %        for my $test (@tests) {
-<span class="test_<%= $type %>">
+<span class="test_<%= $type %> test_detail">
 <%= "$test->{file}: $test->{messages}[0]" %>
+<div class="configs">
+% for my $c ($test->{configs}->@*) {
+<div><%= $c %></div>
+% }
+</div>
 </span>
 %        }
 
