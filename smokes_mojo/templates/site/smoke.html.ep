@@ -33,3 +33,25 @@
          <a href="<%= $smoke->{similar_url} %>" title="reports with a similar configuration">S</a>
     </td>
   </tr>
+% if ($smoke->{test_failures_summary} && $smoke->{test_failures_summary}->@*
+%     || $smoke->{todo_passed_summary} && $smoke->{todo_passed_summary}->@*) {
+  <tr class="tests <%= "@$class" %>" data-duplicate="<%= $smoke->{is_duplicate} %>">
+    <td></td>
+    <td colspan=4>
+%   for my ($type, $tests) ("failed", $smoke->{test_failures_summary},
+%                           "passed", $smoke->{todo_passed_summary}) {
+%      my @tests = $tests ? @$tests : ();
+%      if (@tests) {
+<span class="testhead_<%= $type %>"><%= $type %></span>
+%        for my $test (@tests) {
+<span class="test_<%= $type %>">
+<%= "$test->{file}: $test->{messages}[0]" %>
+</span>
+%        }
+
+%      }
+%   }
+    </td>
+    <td colspan=2></td>
+  </tr>
+% }

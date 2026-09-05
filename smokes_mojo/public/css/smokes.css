@@ -223,3 +223,25 @@ tr.config td {
 .links a:hover {
     background-color: #CCC;
 }
+
+.tests {
+    font-size: 90%;
+}
+
+.tests .testhead_failed {
+    font-weight: bold;
+    color: #F00;
+}
+
+.tests .test_failed {
+    color: #F00;
+}
+
+.tests .testhead_passed {
+    font-weight: bold;
+    color: #080;
+}
+
+.tests .test_passed {
+    color: #080;
+}

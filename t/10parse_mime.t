@@ -48,7 +48,7 @@ use Data::Dumper;
 	      file => '../lib/locale_threads.t',
 	      configs =>
 	      [
-	       "[perlio] -DDEBUGGING -Duseithreads"
+	       "[default] -DDEBUGGING -Duseithreads"
 	      ],
 	      messages =>
 	      [
@@ -63,10 +63,10 @@ use Data::Dumper;
 	      file => '../ext/IPC-Open3/t/IPC-Open3.t',
 	      configs =>
 	      [
-	       '[perlio]',
-	       '[perlio] -DDEBUGGING',
-	       '[perlio] -DDEBUGGING -Duseithreads',
-	       '[perlio] -Duseithreads',
+	       '[default]',
+	       '[default] -DDEBUGGING',
+	       '[default] -DDEBUGGING -Duseithreads',
+	       '[default] -Duseithreads',
 	      ],
 	      messages =>
 	      [
@@ -77,8 +77,8 @@ use Data::Dumper;
 	      file => '../t/win32/stat.t',
 	      configs =>
 	      [
-	       '[perlio]',
-	       '[perlio] -DDEBUGGING',
+	       '[default]',
+	       '[default] -DDEBUGGING',
 	      ],
 	      messages =>
 	      [
@@ -86,7 +86,7 @@ use Data::Dumper;
 	      ],
 	     },
 	    ], "todo_passed")
-    or diag Dumper($p->{todo_passed});
+    or diag Dumper($p->{todo_passed_summary});
 }
 
 done_testing();

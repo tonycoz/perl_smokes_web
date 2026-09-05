@@ -260,8 +260,23 @@ sub raw ($self) {
 	    }
 	}
 	@headers = grep /^(?:subject|message-id|content-type|mime-version|date|content-transfer-encoding|content-type):/i, @headers;
+	   
+	my @others = $prs->search(
+	    {
+		build_hash => $pr->build_hash,
+		id => { '!=' => $pr->id },
+		sha => $pr->sha,
+	    },
+	    {
+		order_by => "id desc",
+		columns => [ qw(id nntp_id smokedb_id) ],
+	    }
+	    )->all;
+
+
 	my $non_raw = join("\n", @headers) . "\n\n" . $parsed->{bodytext};
 	return $self->render(raw => $non_raw,
+			     others => \@others,
 			     pr => $pr,
 			     id => $nntp_id);
     }
@@ -298,12 +313,24 @@ sub db ($self) {
     unless ($sr) {
 	$self->render(template => "does_not_exist");
     }
+    my @others = $prs->search(
+	{
+	    build_hash => $pr->build_hash,
+	    id => { '!=' => $pr->id },
+	    sha => $pr->sha,
+	},
+	{
+	    order_by => "id desc",
+	    columns => [ qw(id nntp_id smokedb_id) ],
+	}
+	)->all;
     
     my $js = $sr->full_report;
     $self->render(js => $js,
 		  pr => $pr,
 		  sr => $sr,
 		  id => $sr->report_id,
+		  others => \@others,
 		  logurl => $pr->more_logurl($self->app->config));
 }
 

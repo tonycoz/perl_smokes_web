@@ -33,7 +33,15 @@ __PACKAGE__->add_columns
    qw(config_hash build_hash),
    conf1_struct => {
        serializer_class => "JSON",
-   });
+   },
+   test_failures_summary => {
+       serializer_class => "JSON",
+   },
+   todo_passed_summary => {
+       serializer_class => "JSON",
+   },
+   qw(parse_warnings),
+  );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to('commit', 'SmokeReports::Schema::Result::GitCommit',
 			{ 'foreign.sha' => 'self.sha' });

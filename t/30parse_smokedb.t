@@ -251,6 +251,57 @@ test_parse("t/reports/db5533079.json",
 		       ], "todo_passed");
 	   }, "report with todo passed");
 
+test_parse
+  ("t/reports/db5537632.json",
+   sub ($report) {
+     is($report->{sha}, 'fd584474cf36982e2f2ef85b042ea51bb02fffaa', "sha");
+     is_deeply($report->{test_failures_summary},
+	       [
+	     {
+	      file => '../lib/locale_threads.t',
+	      configs =>
+	      [
+	       "[stdio] -DDEBUGGING -Duseithreads"
+	      ],
+	      messages =>
+	      [
+	       "2"
+	      ],
+	      },
+	    ],
+	    "test_failures");
+  is_deeply($report->{todo_passed_summary},
+	    [
+	     {
+	      file => '../ext/IPC-Open3/t/IPC-Open3.t',
+	      configs =>
+	      [
+	       '[stdio]',
+	       '[stdio] -DDEBUGGING',
+	       '[stdio] -DDEBUGGING -Duseithreads',
+	       '[stdio] -Duseithreads',
+	      ],
+	      messages =>
+	      [
+	       '33'
+	      ],
+	     },
+	     {
+	      file => '../t/win32/stat.t',
+	      configs =>
+	      [
+	       '[stdio]',
+	       '[stdio] -DDEBUGGING',
+	      ],
+	      messages =>
+	      [
+	       '42'
+	      ],
+	     },
+	    ], "todo_passed")
+    or diag Dumper($report->{todo_passed_summary});
+   }, "test fail/todo summaries");
+
 done_testing;
 
 sub test_parse ($filename, $sub, $name) {

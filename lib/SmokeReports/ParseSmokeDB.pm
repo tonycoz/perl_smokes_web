@@ -30,18 +30,29 @@ sub base_result() {
      build_hash => '',
      config_hash => '',
      conf1_struct => {},
+     test_failures_summary => [],
+     todo_passed_summary => [],
+     parse_warnings => '',
     );
 }
 
 sub parse_smoke_report ($report, $verbose) {
   my %result = base_result();
+  
   my $pjson;
   unless (eval { $pjson = $json_parser->decode($report); 1 }) {
     $result{error} = "JSON parse error: $@";
   }
-  elsif (!eval { do_parse_smoke_report(\%result, $pjson); 1 }) {
-    $result{error} = $@;
-    print "Error: $@\n" if $verbose;
+  else {
+    local $SIG{__WARN__} =
+      sub ($msg) {
+	$result{parse_warnings} .= $msg;
+	print STDERR "$pjson->{id}: $msg";
+      };
+    if (!eval { do_parse_smoke_report(\%result, $pjson); 1 }) {
+      $result{error} = $@;
+      print "Error: $@\n" if $verbose;
+    }
   }
 
   return \%result;
@@ -56,6 +67,34 @@ sub parse_decoded_smoke_report($pjson, $verbose) {
   }
 
   \%result;
+}
+
+my sub test_summary ($results) {
+  my %out;
+  for my $test (values $results->%*) {
+    my @configs;
+    for my $cfg ($test->{configs}->@*) {
+      my $args = $cfg->{arguments};
+      if ($args =~ s/(^|\s+)DEBUGGING$//) {
+	length $args and $args = " $args";
+	$args = "-DDEBUGGING$args";
+      }
+      push @configs,
+	join " ", grep length,
+	"[".($cfg->{locale} || $cfg->{io_envs}). "]", $args;
+    }
+    @configs = sort @configs;
+    my $entry = $out{$test} ||=
+      {
+       file => $test->{result}{test},
+       messages => [ split /\n/, $test->{result}{extra} ],
+       configs => \@configs
+      };
+  }
+  return
+    [
+     sort { $a->{file} cmp $b->{file} } values %out
+    ];	
 }
 
 sub do_parse_smoke_report ($result, $report) {
@@ -95,6 +134,18 @@ sub do_parse_smoke_report ($result, $report) {
 
   my %conf1;
   #my %conf2;
+  # %tests{$status}{$somekey} =
+  # {
+  #   test => $filename,
+  #   status => "PASSED" | "FAILED"
+  #   extra => $extra # test numbers, error exits etc
+  #   configs =>
+  #   [
+  #     arguments => "-Dwhatever",
+  #     io_envs => "perlio",
+  #     locale => "en_AU.UTF-8" # or undef
+  #   ]
+  # }
   my %tests;
   my $index = 0;
   for my $conf ($report->{configs}->@*) {
@@ -103,8 +154,17 @@ sub do_parse_smoke_report ($result, $report) {
     if ($conf->{results}) {
       for my $res ($conf->{results}->@*) {
 	if ($res->{failures}) {
-	  for my $failure ($res->{failures}->@*) {
-	    my $f = $failure->{failure};
+	  # some versions of Test::Smoke dropped the actual test
+	  # report details
+	  for my $failure (grep { $_->{failure} || $_->{test} }
+			   $res->{failures}->@*) {
+	    # newer versions put the test info in the failure key,
+	    # older versions have it in the parent key
+	    my $f = $failure->{failure} || $failure;
+	    use Data::Dumper;
+	    for my $k (qw(test status extra)) {
+	      print STDERR "$k $report->{id}\n", Dumper($res), "\n" unless defined $f->{$k};
+	    }
 	    my $key = "$f->{test} ($f->{status} $f->{extra})";
 	    $tests{$f->{status}}{$key}{result} =
 	      {
@@ -131,8 +191,8 @@ sub do_parse_smoke_report ($result, $report) {
   my @test_failures;
   my @todo_passed;
   for my $which ([ $tests{FAILED} || {}, \@test_failures ],
-		 [ $tests{PASSED} || {}, \@todo_passed   ]) {
-    my ($tests, $save) = @$which;
+		 [ $tests{PASSED} || {}, \@todo_passed ]) {
+    my ($tests, $save, $save_summ) = @$which;
     for my $key (sort keys %$tests) {
       my @confs = $tests->{$key}{configs}->@*;
       my %entry = $tests->{$key}{result}->%*;
@@ -148,8 +208,16 @@ sub do_parse_smoke_report ($result, $report) {
   $result->{test_failures} = \@test_failures;
   $result->{test_todo_passed}   = \@todo_passed;
 
+  $result->{test_failures_summary} = test_summary($tests{FAILED});
+  $result->{todo_passed_summary} = test_summary($tests{PASSED});
+
   my @conf1 = sort { $conf1{$a} <=> $conf1{$b} } keys %conf1;
   $result->{conf1} = \@conf1;
+
+  my @failures_summ;
+  my @todo_passed_summ;
+  
+
 
   fill_common($result);
 

@@ -10,7 +10,21 @@
   [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
   [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
   [<a href="/dbparsedjson/<%= $id %>" title="how we parsed the report, meant for debugging">parsed detail</a>]
+[<a href="/?s=<%= $pr->sha %>">commit</a>]
 </p>
+% if (@$others) {
+<p>
+  Others:
+% for my $r (@$others) {
+%   if ($r->nntp_id) {
+<a href="/raw/<%= $r->nntp_id %>">[nntp]</a>
+%   }
+%   else {
+<a href="/db/<%= $r->smokedb_id %>">[smokedb]</a>
+%   }
+% }
+</p>
+% }
 % unless (defined $js->{log_file}) {
 <p>This report never had a log</p>
 % }

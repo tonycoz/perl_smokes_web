@@ -52,9 +52,7 @@ my sub _parse_tests ($body, $common) {
       shift @$body;
       my ($run_cfgs, $build_cfgs) = ($1, $2);
       for my $run_cfg (split '/', $run_cfgs) {
-	my $rcfg = $run_cfg;
-	$rcfg eq "default" and $rcfg = "perlio";
-	push @cfgs, join " ", "[$rcfg]", grep /\S/, @common, $build_cfgs;
+	push @cfgs, join " ", "[$run_cfg]", grep /\S/, @common, $build_cfgs;
       }
     }
     while (@$body && $body->[0] =~ m(^([\./\w-]+\.t)\W)) {
@@ -62,7 +60,7 @@ my sub _parse_tests ($body, $common) {
       my $line = shift @$body;
       substr($line, 0, length $file, "");
       $line =~ s/^\.+//;
-      print "Leftover $line\n" unless $line =~ /^(PASSED|FAILED)$/;
+      warn "Leftover $line\n" unless $line =~ /^(PASSED|FAILED)$/;
       my @messages;
       while (@$body && $body->[0] =~ /^\s+(\S.*)$/) {
 	push @messages, $1;
@@ -122,7 +120,13 @@ sub parse_report($report_data, $verbose) {
        conf1_struct => {},
        test_failures_summary => [],
        todo_passed_summary => [],
+       parse_warnings => '',
       );
+    local $SIG{__WARN__} =
+      sub ($msg) {
+	$result{parse_warnings} .= $msg;
+	print STDERR $msg;
+      };
     eval {
       _process_report(\%result, $report_data);
       1;
