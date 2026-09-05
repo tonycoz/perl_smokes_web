@@ -526,7 +526,8 @@ sub similar_common($self, $pr, $br) {
 	    (
 	     ( map { $_ => $report->$_ }
 	       qw(id sha status subject original_url report_url logurl similar_url
-                  os cpu cpu_full compiler from msg_id when_at smokedb_id age_seconds) ),
+                  os cpu cpu_full compiler from msg_id when_at smokedb_id
+                  age_seconds test_failures_summary todo_passed_summary) ),
 	    );
 	# only add the original report once
 	push $commit_reports{$report->sha}->@*, \%report;
@@ -536,7 +537,6 @@ sub similar_common($self, $pr, $br) {
 
     # 60 days ago
     my $old_date = POSIX::strftime("%Y-%m-%d", gmtime(time - 86_400 * 60));
-    warn "\n\nOld $old_date\n\n";
 
     my %branch_newish;
     for my $commit (values %commits) {
