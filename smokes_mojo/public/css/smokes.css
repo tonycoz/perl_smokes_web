@@ -244,9 +244,13 @@ tr.config td {
     position: relative;
 }
 
+.tests .test_detail:hover {
+    background-color: #DDD;
+}
+
 .tests .test_detail .configs {
     position: absolute;
-    width: 60em;
+    width: 40em;
     top: 24px;
     left: 20px;
     display: none;
