@@ -53,11 +53,18 @@ window.addEventListener("load", (event) => {
 		return match_regexp(content, values[name]);
 	    });
 
+	    var tests = tr.nextElementSibling;
+	    if (tests && !tests.classList.contains("tests"))
+		tests = undefined;
 	    if (ok) {
 		tr.classList.remove("hide");
+		if (tests)
+		    tests.classList.remove("hide");
 	    }
 	    else {
 		tr.classList.add("hide");
+		if (tests)
+		    tests.classList.add("hide");
 	    }
 	}
     };
