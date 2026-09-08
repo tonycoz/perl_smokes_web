@@ -223,10 +223,6 @@ tr.config td {
     background-color: #CCC;
 }
 
-.tests {
-    font-size: 90%;
-}
-
 .tests .tests_actual {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -263,6 +259,11 @@ tr.config td {
     display: block;
 }
 
+.tests .test_detail ul {
+    margin: 2px;
+    padding-left: 10px;
+}
+
 .tests .testhead_failed {
     font-weight: bold;
     color: #F00;
@@ -274,9 +275,9 @@ tr.config td {
 
 .tests .testhead_passed {
     font-weight: bold;
-    color: #080;
+    color: #060;
 }
 
 .tests .test_passed {
-    color: #080;
+    color: #060;
 }

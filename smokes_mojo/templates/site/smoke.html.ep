@@ -47,9 +47,11 @@
 <span class="test_<%= $type %> test_detail">
 <%= "$test->{file}: $test->{messages}[0]" %>
 <div class="configs">
+<ul>
 % for my $c ($test->{configs}->@*) {
-<div><%= $c %></div>
+<li><%= $c %></li>
 % }
+</ul>
 </div>
 </span>
 %        }
