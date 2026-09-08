@@ -2,6 +2,23 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>8 September 2026</h3>
+
+<ul>
+  <li>add a table row with failed tests/todo passed tests below each smoke row, if any
+    <ul>
+      <li>this only displays a single line of tests, if there are too many
+	to fit you can mouseover the row to reveal them all</li>
+      <li>hover over the failed/passed tests to display the configurations
+	that had this problem or "success"</li>
+    </ul>
+  </li>
+  <li>add links from the report detail pages to the other version of the report, if any, ie. from the email/nntp report to the smokedb report and back.</li>
+  <li>add a link to the reports for a [commit] from the report detail pages</li>
+  <li>use javascript to set row "striping" since with show duplicates, search
+    and the test rows, it's simpler than trying to do it with CSS</li>
+</ul>
+
 <h3>25 July 2026</h3>
 
 <ul>
