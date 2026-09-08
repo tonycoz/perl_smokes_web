@@ -61,15 +61,14 @@ td, th {
     background-color: #CFC;
 }
 
-.commits.hideduplicates tr.smoke:nth-child(even of :not([class*="duplicate"])),
-.commits:not([class*="hideduplicates"]) tr.smoke:nth-child(even) {
+/* I used to have fancy CSS here, but it didn't work well with
+   search and didn't work at all with test rows */
+.commits tr.odd{
     background-color: #EEE;
 }
 
 /* there's probably a better way to do this */
-#commits tr.smoke:hover,
-#commits.hideduplicates tr.smoke:hover:nth-child(even of :not([class*="duplicate"])),
-#commits:not([class*="hideduplicates"]) tr.smoke:hover:nth-child(even) {
+#commits tr.smoke:hover {
     background-color: #CCC;
 }
 

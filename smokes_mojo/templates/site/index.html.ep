@@ -25,18 +25,6 @@ Branch:<div class="autocomplete">
 % }
 <form id="filters" action="">
   <div><input type=checkbox id=showduplicates> <label for="showduplicates">Show duplicate emailed reports</label></div>
-  <script>
-    document.getElementById("showduplicates").addEventListener("change",
-    (ev) => {
-      let commits = document.getElementById("commits");
-	if (ev.target.checked) {
-	    commits.classList.remove("hideduplicates");
-	}
-	else {
-	    commits.classList.add("hideduplicates");
-	}
-      });
-    </script>
 <table id="commits" class="commits hideduplicates cancopycommit">
   <tr class="filters">
     <td><input type="text" id="status" size="5" placeholder="status" /></td>
@@ -48,6 +36,7 @@ Branch:<div class="autocomplete">
    <td><input type="reset" value="Clear Filter"></td>
   </tr>
 % my $last_parent = '';
+% my $odd = 0;
 % for my $group (@$groups) {
 %   if (@$groups > 1) {
 <tr class="group">
@@ -59,11 +48,13 @@ This sequence of commits was last seen <%= $group->{seen_at} %></td>
 %   for my $commit ($group->{commits}->@*) {
 %     $last_parent = $commit->{parent_sha} if $commit->{parent_sha};
 %= include 'site/commit', commit => $commit
-%   for my $smoke ($commit->{smokes}->@*) {
-%     my @class;
-%     push @class, "duplicate" if $smoke->{is_duplicate};
+%     for my $smoke ($commit->{smokes}->@*) {
+%       my @class;
+%       push @class, "duplicate" if $smoke->{is_duplicate};
+%       push @class, "odd" if $odd;
 %= include 'site/smoke', smoke => $smoke, class => \@class
-%   }
+%       $odd = !$odd if !$smoke->{is_duplicate};
+%     }
 %   }
 % }
 </table>

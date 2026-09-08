@@ -14,10 +14,12 @@
     <td>Filter: <span title="Each filter is a JS regular expression possibly with ! before it to invert the selection">?</span></td>
    <td><input type="reset" value="Clear Filter"></td>
   </tr>
+%   my $odd = 0;
 %   for my $smoke ($smokes->@*) {
 %     my $status = $smoke->{status};  
-%     my $class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
-  <tr class="smoke <%= $class %>">
+%     my @class = $status eq "PASS" ? "pass" : $status eq "FAIL(X)" ? "doubt" : "fail";
+%     push @class, "odd" if $odd;
+  <tr class="smoke <%= "@class" %>">
     <td class="status"><%= $status %></td>
 %     my $branch = $smoke->{"branch"};
     <td><a href="/?b=<%= $branch %>"><%= $branch %></a></td>
@@ -37,6 +39,7 @@
 <a href="<%= $smoke->{similar_url} %>">S</a>
     </td>
   </tr>
+%     $odd = !$odd;
 %   }
 </table>
 </form>

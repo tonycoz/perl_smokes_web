@@ -23,6 +23,30 @@ window.addEventListener("load", (event) => {
 	    cc: 3,
 	    from: 4
 	};
+    function stripe() {
+	var odd = 0;
+	var dupsVisible = document.getElementById("showduplicates").checked;
+	for (var report of reports) {
+	    var cl = report.classList;
+	    if (!cl.contains("hide")
+		&& (dupsVisible || !cl.contains("duplicate"))) {
+		var tests = report.nextElementSibling;
+		if (tests && !tests.classList.contains("tests"))
+		    tests = undefined;
+		if (odd) {
+		    cl.add("odd");
+		    if (tests)
+			tests.classList.add("odd");
+		}
+		else {
+		    cl.remove("odd");
+		    if (tests)
+			tests.classList.remove("odd");
+		}
+		odd = !odd;
+	    }
+	}
+    }
     var do_search = function () {
 	// mirror the filter parameters in the URL fragment
 	var frag_obj = new URLSearchParams();
@@ -67,6 +91,7 @@ window.addEventListener("load", (event) => {
 		    tests.classList.add("hide");
 	    }
 	}
+	stripe();
     };
     var start = new URLSearchParams(location.hash.substring(1));
     search_params.forEach((name) => {
@@ -117,4 +142,15 @@ window.addEventListener("load", (event) => {
 	    }, 500);
 	});
     }
+    document.getElementById("showduplicates").addEventListener("change",
+    (ev) => {
+      let commits = document.getElementById("commits");
+	if (ev.target.checked) {
+	    commits.classList.remove("hideduplicates");
+	}
+	else {
+	    commits.classList.add("hideduplicates");
+	}
+	stripe();
+      });
 });

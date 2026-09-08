@@ -17,6 +17,7 @@
 <%= $matrix %>
 </pre>
 
+% my $odd = 0;
 % for my $branch (@$branches) {
 <h3>Branch <a href="/?b=<%= $branch->{name} %>"><%== $branch->{name} %></a></h3>
 
@@ -24,9 +25,11 @@
 %   for my $commit ($branch->{commits}->@*) {
 %= include 'site/commit', commit => $commit
 %     for my $report ($commit->{reports}->@*) {
-% my @class;
-% push @class, "original" if $report->{id} == $original->{id};
+%       my @class;
+%       push @class, "original" if $report->{id} == $original->{id};
+%       push @class, "odd" if $odd;
 %= include 'site/smoke', smoke => $report, class => \@class;
+%       $odd = !$odd;
 %     }
 %   }
 </table>
