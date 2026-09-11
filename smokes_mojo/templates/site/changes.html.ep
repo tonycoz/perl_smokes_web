@@ -5,7 +5,10 @@
 <h3>11 September 2026</h3>
 
 <ul>
-  <li>add display of the "out file" if any, linked from the DB report display</li>
+  <li>add display of the "out file" if any, linked from the DB report
+    display</li>
+  <li>re-layout the links line of the report detail pages to separate the
+    most useful links from the technical details</li>
 </ul>
 
 <h3>8 September 2026</h3>
