@@ -420,6 +420,32 @@ TEXT
     }
 }
 
+sub dboutfile ($self) {
+    my $report_id = $self->param("id");
+    my $schema = $self->app->schema;
+    my $prs = $schema->resultset("ParsedReport");
+    my $dbr = $schema->resultset("Perl5Smoke");
+    my $pr = $prs->find({ smokedb_id => $report_id });
+    unless ($pr) {
+	$self->render(template => "does_not_exist");
+	return;
+    }
+    my $sr = $dbr->find({ report_id => $report_id });
+    unless ($sr) {
+	$self->render(template => "does_not_exist");
+	return;
+    }
+    my $js = $sr->base_report;
+    unless ($js->{out_file}) {
+	$self->render(template => "does_not_exist");
+	return;
+    }
+    $self->render(pr => $pr,
+		  sr => $sr,
+		  id => $pr->smokedb_id,
+		  outfile => $js->{out_file});
+}
+
 sub dbparsedjson ($self) {
     my $report_id = $self->param("id");
     unless ($report_id =~ /\A[1-9][0-9]*\z/) {

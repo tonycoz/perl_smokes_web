@@ -7,10 +7,14 @@
   % }
   [<a href="<%= $pr->original_url %>">via test-smoke.org</a>]
   [<a href="<%= $pr->similar_url %>">similar</a>]
+  [<a href="/?s=<%= $pr->sha %>">commit</a>]
+  % if ($js->{out_file}) {
+  [<a href="/db/<%= $id %>/outfile">outfile</a>]
+  % }  
+  | Technical stuff:
   [<a href="/dbjson/<%= $id %>">Raw JSON</a>]
   [<a href="/dbreportjson/<%= $id %>" title="Includes generated keys to simplify displaying the report">Report JSON</a>]
   [<a href="/dbparsedjson/<%= $id %>" title="how we parsed the report, meant for debugging">parsed detail</a>]
-[<a href="/?s=<%= $pr->sha %>">commit</a>]
 </p>
 % if (@$others) {
 <p>
