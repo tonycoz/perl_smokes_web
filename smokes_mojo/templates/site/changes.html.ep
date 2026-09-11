@@ -2,6 +2,12 @@
 % title 'Changes';
 <h2>Changes</h2>
 
+<h3>11 September 2026</h3>
+
+<ul>
+  <li>add display of the "out file" if any, linked from the DB report display</li>
+</ul>
+
 <h3>8 September 2026</h3>
 
 <ul>
