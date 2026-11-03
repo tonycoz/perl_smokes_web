@@ -13,6 +13,7 @@ WriteMakefile
     'DateTime::Format::Mail' => 0,
     'Cpanel::JSON::XS' => 0,
     perl => v5.32,
+    'DBIx::Class::InflateColumn::Serializer' => 0,
    },
    test => {TESTS => 't/*.t'},
 );
